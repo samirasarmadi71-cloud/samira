@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { Landmark, Plus, Search, Filter, Banknote, DollarSign, CreditCard, ArrowRightLeft, Calendar, Scale, Eye, Edit } from 'lucide-react';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
 
 const checks = [
   { id: 1, number: 'چک-۰۰۱', type: 'دریافتی', party: 'شرکت آلفا', amount: '۵,۰۰۰,۰۰۰', bank: 'بانک ملت', issueDate: '۱۴۰۴/۰۴/۱۰', dueDate: '۱۴۰۴/۰۴/۱۶', status: 'در انتظار وصول' },
@@ -23,19 +26,66 @@ const quickActions = [
 ];
 
 export default function Treasury() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleExport = () => {
+    exportToCSV(
+      checks.map(c => ({
+        'شماره': c.number,
+        'نوع': c.type,
+        'طرف حساب': c.party,
+        'مبلغ': c.amount,
+        'بانک': c.bank,
+        'تاریخ صدور': c.issueDate,
+        'سررسید': c.dueDate,
+        'وضعیت': c.status
+      })),
+      'checks'
+    );
+  };
+
+  const filteredChecks = checks.filter(c =>
+    c.number.includes(searchQuery) ||
+    c.party.includes(searchQuery) ||
+    c.bank.includes(searchQuery)
+  );
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">چک و خزانه‌داری</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت صندوق، بانک، چک‌ها و تراکنش‌های مالی</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-indigo-500/30 transition-all">
-          <Plus size={16} />
-          ثبت تراکنش
-        </button>
-      </div>
+      <PageToolbar
+        title="چک و خزانه‌داری"
+        subtitle="مدیریت صندوق، بانک، چک‌ها و تراکنش‌های مالی"
+        searchPlaceholder="جست‌وجوی شماره چک، طرف حساب یا بانک..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        filters={[
+          {
+            key: 'type',
+            label: 'نوع چک',
+            options: [
+              { value: 'received', label: 'دریافتی' },
+              { value: 'paid', label: 'پرداختی' }
+            ]
+          },
+          {
+            key: 'status',
+            label: 'وضعیت',
+            options: [
+              { value: 'pending', label: 'در انتظار' },
+              { value: 'cleared', label: 'وصول شده' },
+              { value: 'bounced', label: 'برگشتی' }
+            ]
+          }
+        ]}
+        onAdd={() => {}}
+        addLabel="ثبت تراکنش"
+        addColor="from-indigo-500 to-blue-600"
+        onPrint={() => window.print()}
+        onExportExcel={handleExport}
+        showDateRange
+        resultCount={filteredChecks.length}
+        totalCount={checks.length}
+      />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -104,7 +154,7 @@ export default function Treasury() {
               </tr>
             </thead>
             <tbody>
-              {checks.map((check) => (
+              {filteredChecks.map((check) => (
                 <tr key={check.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="py-3.5 px-5 text-xs font-mono font-bold text-gray-700">{check.number}</td>
                   <td className="py-3.5 px-5">

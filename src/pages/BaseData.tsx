@@ -1,4 +1,6 @@
 import { Building2, Calendar, Tags, Ruler, Warehouse, Landmark, FileText, CreditCard, Hash, Plus, Edit, Search, Filter } from 'lucide-react';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
 
 const baseDataItems = [
   { title: 'اطلاعات شرکت', desc: 'نام، نشانی، تلفن و لوگو', icon: <Building2 size={20} />, color: 'from-blue-400 to-blue-600', count: '۱ مورد' },
@@ -24,19 +26,31 @@ const chartOfAccounts = [
 ];
 
 export default function BaseData() {
+  const handleExport = () => {
+    exportToCSV(
+      chartOfAccounts.map(a => ({
+        'کد': a.code,
+        'عنوان': a.title,
+        'نوع': a.type,
+        'وضعیت': a.status,
+        'زیرمجموعه': a.children
+      })),
+      'chart_of_accounts'
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">اطلاعات پایه</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت تنظیمات و داده‌های پایه سیستم</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all">
-          <Plus size={16} />
-          افزودن مورد جدید
-        </button>
-      </div>
+      <PageToolbar
+        title="اطلاعات پایه"
+        subtitle="مدیریت تنظیمات و داده‌های پایه سیستم"
+        searchPlaceholder="جست‌وجو در اطلاعات پایه..."
+        onAdd={() => {}}
+        addLabel="افزودن مورد جدید"
+        addColor="from-emerald-500 to-green-600"
+        onPrint={() => window.print()}
+        onExportExcel={handleExport}
+      />
 
       {/* Quick Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

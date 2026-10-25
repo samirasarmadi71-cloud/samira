@@ -84,6 +84,21 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    id: 'chart-of-accounts',
+    label: 'کدینگ حساب‌ها',
+    icon: <FileText size={22} />,
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-500',
+    gradientFrom: '#ec4899',
+    gradientTo: '#db2777',
+    shadowColor: 'shadow-pink-500/40',
+    subItems: [
+      { label: 'حساب‌های کل', icon: <FileText size={15} /> },
+      { label: 'حساب‌های معین', icon: <FileText size={15} /> },
+      { label: 'حساب‌های تفصیلی', icon: <FileText size={15} /> },
+    ]
+  },
+  {
     id: 'contacts',
     label: 'معرفی اشخاص',
     icon: <Users size={22} />,
@@ -258,7 +273,14 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
   return (
     <div className={`flex h-screen overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-[#f0f4f8]'}`}>
       {/* Slim Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} border-l flex flex-col overflow-hidden shadow-sm z-20 relative`}>
+      <aside 
+        className={`
+          ${sidebarOpen ? 'w-64 min-w-[256px]' : 'w-0 min-w-0'} 
+          transition-all duration-300 ease-in-out 
+          ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} 
+          border-l flex flex-col overflow-hidden shadow-sm z-20 relative
+        `}
+      >
         {/* Sidebar Logo */}
         <div className={`h-16 flex items-center justify-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'} px-4`}>
           <div className="flex items-center gap-2.5">

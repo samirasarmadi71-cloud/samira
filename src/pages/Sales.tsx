@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { TrendingUp, Plus, Search, Filter, Eye, Edit, Printer, FileText, Receipt, TrendingDown, DollarSign, BarChart3, PieChart, Banknote } from 'lucide-react';
 import NewInvoiceForm from '../components/NewInvoiceForm';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
+import { useSearchFilter } from '../hooks/useSearchFilter';
 
 const salesInvoices = [
   { id: 1, number: 'فروش-۲۰۰۱', date: '۱۴۰۴/۰۴/۱۴', customer: 'شرکت آلفا تکنولوژی', amount: '۱۲,۵۰۰,۰۰۰', profit: '۳,۲۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار مرکزی', payment: '۸۰٪' },
@@ -19,22 +22,57 @@ const quickActions = [
 
 export default function Sales() {
   const [showNewInvoice, setShowNewInvoice] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleExport = () => {
+    exportToCSV(
+      salesInvoices.map(inv => ({
+        'شماره': inv.number,
+        'تاریخ': inv.date,
+        'مشتری': inv.customer,
+        'مبلغ': inv.amount,
+        'سود': inv.profit,
+        'وضعیت': inv.status,
+        'پرداخت': inv.payment
+      })),
+      'sales_invoices'
+    );
+  };
+
+  const filteredInvoices = salesInvoices.filter(inv =>
+    inv.number.includes(searchQuery) ||
+    inv.customer.includes(searchQuery) ||
+    inv.date.includes(searchQuery)
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">فروش</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت فاکتورها، سفارشات و گزارش‌های فروش</p>
-        </div>
-        <button 
-          onClick={() => setShowNewInvoice(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-rose-500/30 transition-all">
-          <Plus size={16} />
-          فاکتور فروش جدید
-        </button>
-      </div>
+      <PageToolbar
+        title="فروش"
+        subtitle="مدیریت فاکتورها، سفارشات و گزارش‌های فروش"
+        searchPlaceholder="جست‌وجوی شماره، مشتری یا تاریخ..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        filters={[
+          {
+            key: 'status',
+            label: 'وضعیت',
+            options: [
+              { value: 'confirmed', label: 'قطعی' },
+              { value: 'draft', label: 'پیش‌نویس' },
+              { value: 'returned', label: 'برگشتی' }
+            ]
+          }
+        ]}
+        onAdd={() => setShowNewInvoice(true)}
+        addLabel="فاکتور فروش جدید"
+        addColor="from-rose-500 to-pink-600"
+        onPrint={() => window.print()}
+        onExportExcel={handleExport}
+        showDateRange
+        resultCount={filteredInvoices.length}
+        totalCount={salesInvoices.length}
+      />
 
       {/* New Invoice Modal */}
       {showNewInvoice && (
@@ -140,7 +178,7 @@ export default function Sales() {
               </tr>
             </thead>
             <tbody>
-              {salesInvoices.map((invoice) => (
+              {filteredInvoices.map((invoice) => (
                 <tr key={invoice.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="py-3.5 px-5 text-xs font-mono font-bold text-gray-700">{invoice.number}</td>
                   <td className="py-3.5 px-5 text-xs text-gray-600">{invoice.date}</td>

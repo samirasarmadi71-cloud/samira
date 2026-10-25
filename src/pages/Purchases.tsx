@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ShoppingCart, Plus, Search, Filter, Eye, Edit, Printer, FileText, Receipt, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
 import NewInvoiceForm from '../components/NewInvoiceForm';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
 
 const purchaseInvoices = [
   { id: 1, number: 'خرید-۱۰۰۱', date: '۱۴۰۴/۰۴/۱۲', supplier: 'تأمین‌کننده بتا', amount: '۸,۲۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار مرکزی', payment: '۶۰٪' },
@@ -19,22 +21,57 @@ const quickActions = [
 
 export default function Purchases() {
   const [showNewInvoice, setShowNewInvoice] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleExport = () => {
+    exportToCSV(
+      purchaseInvoices.map(inv => ({
+        'شماره': inv.number,
+        'تاریخ': inv.date,
+        'تأمین‌کننده': inv.supplier,
+        'انبار': inv.warehouse,
+        'مبلغ': inv.amount,
+        'وضعیت': inv.status,
+        'پرداخت': inv.payment
+      })),
+      'purchase_invoices'
+    );
+  };
+
+  const filteredInvoices = purchaseInvoices.filter(inv =>
+    inv.number.includes(searchQuery) ||
+    inv.supplier.includes(searchQuery) ||
+    inv.date.includes(searchQuery)
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">خرید</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت فاکتورها، سفارشات و گزارش‌های خرید</p>
-        </div>
-        <button 
-          onClick={() => setShowNewInvoice(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-amber-500/30 transition-all">
-          <Plus size={16} />
-          فاکتور خرید جدید
-        </button>
-      </div>
+      <PageToolbar
+        title="خرید"
+        subtitle="مدیریت فاکتورها، سفارشات و گزارش‌های خرید"
+        searchPlaceholder="جست‌وجوی شماره، تأمین‌کننده یا تاریخ..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        filters={[
+          {
+            key: 'status',
+            label: 'وضعیت',
+            options: [
+              { value: 'confirmed', label: 'قطعی' },
+              { value: 'draft', label: 'پیش‌نویس' },
+              { value: 'returned', label: 'برگشتی' }
+            ]
+          }
+        ]}
+        onAdd={() => setShowNewInvoice(true)}
+        addLabel="فاکتور خرید جدید"
+        addColor="from-amber-500 to-orange-600"
+        onPrint={() => window.print()}
+        onExportExcel={handleExport}
+        showDateRange
+        resultCount={filteredInvoices.length}
+        totalCount={purchaseInvoices.length}
+      />
 
       {/* New Invoice Modal */}
       {showNewInvoice && (
@@ -133,7 +170,7 @@ export default function Purchases() {
               </tr>
             </thead>
             <tbody>
-              {purchaseInvoices.map((invoice) => (
+              {filteredInvoices.map((invoice) => (
                 <tr key={invoice.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="py-3.5 px-5 text-xs font-mono font-bold text-gray-700">{invoice.number}</td>
                   <td className="py-3.5 px-5 text-xs text-gray-600">{invoice.date}</td>

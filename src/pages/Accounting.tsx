@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { BookOpen, Plus, Search, Filter, PenTool, ClipboardList, FileText, Lock, ArrowRightLeft, Calendar, Eye, Edit, CheckCircle2, XCircle } from 'lucide-react';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
 
 const documents = [
   { id: 1, number: 'سند-۱۰۰۱', date: '۱۴۰۴/۰۴/۱۴', description: 'ثبت فاکتور فروش #۲۰۰۱', debit: '۱۲,۵۰۰,۰۰۰', credit: '۱۲,۵۰۰,۰۰۰', status: 'قطعی', type: 'خودکار', creator: 'سیستم' },
@@ -17,19 +20,66 @@ const quickActions = [
 ];
 
 export default function Accounting() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleExport = () => {
+    exportToCSV(
+      documents.map(d => ({
+        'شماره': d.number,
+        'تاریخ': d.date,
+        'شرح': d.description,
+        'بدهکار': d.debit,
+        'بستانکار': d.credit,
+        'نوع': d.type,
+        'ثبت‌کننده': d.creator,
+        'وضعیت': d.status
+      })),
+      'accounting_documents'
+    );
+  };
+
+  const filteredDocuments = documents.filter(d =>
+    d.number.includes(searchQuery) ||
+    d.description.includes(searchQuery) ||
+    d.creator.includes(searchQuery)
+  );
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">اسناد حسابداری</h1>
-          <p className="text-sm text-gray-500 mt-1">ثبت، مدیریت و پیگیری اسناد حسابداری</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-fuchsia-500/30 transition-all">
-          <Plus size={16} />
-          ثبت سند جدید
-        </button>
-      </div>
+      <PageToolbar
+        title="اسناد حسابداری"
+        subtitle="ثبت، مدیریت و پیگیری اسناد حسابداری"
+        searchPlaceholder="جست‌وجوی شماره، شرح یا ثبت‌کننده..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        filters={[
+          {
+            key: 'status',
+            label: 'وضعیت',
+            options: [
+              { value: 'finalized', label: 'قطعی' },
+              { value: 'confirmed', label: 'تأییدشده' },
+              { value: 'draft', label: 'پیش‌نویس' }
+            ]
+          },
+          {
+            key: 'type',
+            label: 'نوع',
+            options: [
+              { value: 'auto', label: 'خودکار' },
+              { value: 'manual', label: 'دستی' }
+            ]
+          }
+        ]}
+        onAdd={() => {}}
+        addLabel="ثبت سند جدید"
+        addColor="from-fuchsia-500 to-purple-600"
+        onPrint={() => window.print()}
+        onExportExcel={handleExport}
+        showDateRange
+        resultCount={filteredDocuments.length}
+        totalCount={documents.length}
+      />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -131,7 +181,7 @@ export default function Accounting() {
               </tr>
             </thead>
             <tbody>
-              {documents.map((doc) => (
+              {filteredDocuments.map((doc) => (
                 <tr key={doc.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="py-3.5 px-5 text-xs font-mono font-bold text-gray-700">{doc.number}</td>
                   <td className="py-3.5 px-5 text-xs text-gray-600">{doc.date}</td>

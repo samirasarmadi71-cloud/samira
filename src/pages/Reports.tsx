@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { BarChart3, FileText, Users, Landmark, BookOpen, Scale, TrendingUp, FileSpreadsheet, Package, Download, Printer, Calendar, Filter } from 'lucide-react';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 const monthlyData = [
@@ -23,27 +26,39 @@ const reportTypes = [
 ];
 
 export default function Reports() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState('۱۴۰۴/۰۱/۰۱');
+  const [dateTo, setDateTo] = useState('۱۴۰۴/۰۶/۳۱');
+
+  const handleExport = () => {
+    exportToCSV(
+      monthlyData.map(m => ({
+        'ماه': m.name,
+        'فروش': m.sales,
+        'خرید': m.purchases,
+        'سود': m.profit,
+        'حاشیه سود': `${(m.profit / m.sales * 100).toFixed(0)}%`
+      })),
+      'financial_report'
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">گزارشات</h1>
-          <p className="text-sm text-gray-500 mt-1">گزارش‌های مالی، حسابداری و تحلیلی</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-gray-200/50 shadow-sm">
-            <Calendar size={14} className="text-gray-400" />
-            <span className="text-xs text-gray-600">از: ۱۴۰۴/۰۱/۰۱</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-xs text-gray-600">تا: ۱۴۰۴/۰۶/۳۱</span>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-teal-500/30 transition-all">
-            <Download size={16} />
-            خروجی Excel
-          </button>
-        </div>
-      </div>
+      <PageToolbar
+        title="گزارشات"
+        subtitle="گزارش‌های مالی، حسابداری و تحلیلی"
+        searchPlaceholder="جست‌وجو در گزارش‌ها..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        showDateRange
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        onPrint={() => window.print()}
+        onExportExcel={handleExport}
+      />
 
       {/* Report Types */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

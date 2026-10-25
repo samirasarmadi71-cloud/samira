@@ -87,7 +87,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-black text-gray-800">داشبورد</h1>
           <p className="text-sm text-gray-500 mt-1">نمای کلی از وضعیت سیستم حسابداری</p>

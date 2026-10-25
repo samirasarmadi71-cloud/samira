@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Settings as SettingsIcon, Users, Palette, Globe, Printer, Upload, HardDrive, History, Info, Shield, Save, ChevronLeft, User, Lock, Bell, Database, Download, RefreshCw } from 'lucide-react';
 import { backupDatabase, execQuery } from '../database/db';
+import PageToolbar from '../components/PageToolbar';
+import { exportToCSV } from '../utils/exportImport';
 
 const settingsSections = [
   { title: 'کاربران و مجوزها', desc: 'مدیریت کاربران، نقش‌ها و دسترسی‌ها', icon: <Users size={20} />, color: 'from-blue-400 to-blue-600', count: '۵ کاربر' },
@@ -63,19 +65,30 @@ export default function Settings() {
     }
   };
 
+  const handleExportLogs = () => {
+    const logs = execQuery(`SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100`);
+    exportToCSV(
+      logs.map((l: any) => ({
+        'شناسه': l.id,
+        'کاربر': l.user_id,
+        'عملیات': l.action,
+        'جدول': l.table_name,
+        'رکورد': l.record_id,
+        'تاریخ': l.created_at
+      })),
+      'audit_logs'
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800">تنظیمات</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت تنظیمات سیستم، کاربران و پشتیبان‌گیری</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-slate-500 to-gray-700 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-slate-500/30 transition-all">
-          <Save size={16} />
-          ذخیره تغییرات
-        </button>
-      </div>
+      <PageToolbar
+        title="تنظیمات"
+        subtitle="مدیریت تنظیمات سیستم، کاربران و پشتیبان‌گیری"
+        searchPlaceholder="جست‌وجو در تنظیمات..."
+        onPrint={() => window.print()}
+        onExportExcel={handleExportLogs}
+      />
 
       {/* Settings Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -11,9 +11,10 @@ import Reports from './pages/Reports';
 import Accounting from './pages/Accounting';
 import Settings from './pages/Settings';
 import LoginPage from './pages/LoginPage';
+import ChartOfAccounts from './pages/ChartOfAccounts';
 import { initDatabase } from './database/db';
 
-export type PageType = 'dashboard' | 'base-data' | 'contacts' | 'purchases' | 'sales' | 'inventory' | 'treasury' | 'reports' | 'accounting' | 'settings';
+export type PageType = 'dashboard' | 'base-data' | 'contacts' | 'purchases' | 'sales' | 'inventory' | 'treasury' | 'reports' | 'accounting' | 'settings' | 'chart-of-accounts';
 
 interface User {
   id: number;
@@ -113,6 +114,7 @@ function App() {
       case 'reports': return <Reports />;
       case 'accounting': return <Accounting />;
       case 'settings': return <Settings />;
+      case 'chart-of-accounts': return <ChartOfAccounts />;
       default: return <Dashboard />;
     }
   };
