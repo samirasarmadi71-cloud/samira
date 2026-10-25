@@ -2,7 +2,8 @@ import {
   TrendingUp, TrendingDown, DollarSign, ShoppingCart,
   Package, Users, AlertTriangle, CreditCard,
   Calendar, ArrowUpRight, ArrowDownRight, Zap,
-  Wallet, Receipt, Clock
+  Wallet, Receipt, Clock, CheckCircle2, XCircle,
+  ArrowLeft, Eye
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
@@ -31,11 +32,11 @@ const categoryData = [
 ];
 
 const recentActivities = [
-  { id: 1, type: 'sale', desc: 'فاکتور فروش #۱۲۳۴ - شرکت آلفا', amount: '۱۲,۵۰۰,۰۰۰', time: '۵ دقیقه پیش', icon: <Receipt size={14} />, color: 'from-green-400 to-emerald-600' },
-  { id: 2, type: 'purchase', desc: 'فاکتور خرید #۵۶۷ - تأمین‌کننده بتا', amount: '۸,۲۰۰,۰۰۰', time: '۲۰ دقیقه پیش', icon: <ShoppingCart size={14} />, color: 'from-blue-400 to-blue-600' },
-  { id: 3, type: 'receive', desc: 'دریافت وجه از مشتری گاما', amount: '۵,۰۰۰,۰۰۰', time: '۱ ساعت پیش', icon: <Wallet size={14} />, color: 'from-emerald-400 to-green-600' },
-  { id: 4, type: 'check', desc: 'چک سررسید امروز - بانک ملت', amount: '۳,۸۰۰,۰۰۰', time: '۲ ساعت پیش', icon: <CreditCard size={14} />, color: 'from-amber-400 to-amber-600' },
-  { id: 5, type: 'inventory', desc: 'رسید انبار - کالای دیجیتال', amount: '۱۵ قلم', time: '۳ ساعت پیش', icon: <Package size={14} />, color: 'from-purple-400 to-purple-600' },
+  { id: 1, type: 'sale', desc: 'فاکتور فروش #۱۲۳۴ - شرکت آلفا', amount: '۱۲,۵۰۰,۰۰۰', time: '۵ دقیقه پیش', icon: <Receipt size={14} />, gradient: 'from-green-400 to-emerald-600' },
+  { id: 2, type: 'purchase', desc: 'فاکتور خرید #۵۶۷ - تأمین‌کننده بتا', amount: '۸,۲۰۰,۰۰۰', time: '۲۰ دقیقه پیش', icon: <ShoppingCart size={14} />, gradient: 'from-blue-400 to-blue-600' },
+  { id: 3, type: 'receive', desc: 'دریافت وجه از مشتری گاما', amount: '۵,۰۰۰,۰۰۰', time: '۱ ساعت پیش', icon: <Wallet size={14} />, gradient: 'from-emerald-400 to-green-600' },
+  { id: 4, type: 'check', desc: 'چک سررسید امروز - بانک ملت', amount: '۳,۸۰۰,۰۰۰', time: '۲ ساعت پیش', icon: <CreditCard size={14} />, gradient: 'from-amber-400 to-amber-600' },
+  { id: 5, type: 'inventory', desc: 'رسید انبار - کالای دیجیتال', amount: '۱۵ قلم', time: '۳ ساعت پیش', icon: <Package size={14} />, gradient: 'from-purple-400 to-purple-600' },
 ];
 
 const lowStockItems = [
@@ -45,9 +46,9 @@ const lowStockItems = [
 ];
 
 const upcomingChecks = [
-  { party: 'شرکت آلفا', amount: '۵,۰۰۰,۰۰۰', date: '۱۴۰۴/۰۴/۱۶', type: 'دریافتی', color: 'bg-green-50 border-green-200 text-green-700' },
-  { party: 'تأمین‌کننده بتا', amount: '۳,۲۰۰,۰۰۰', date: '۱۴۰۴/۰۴/۱۷', type: 'پرداختی', color: 'bg-red-50 border-red-200 text-red-700' },
-  { party: 'شرکت گاما', amount: '۸,۵۰۰,۰۰۰', date: '۱۴۰۴/۰۴/۱۸', type: 'دریافتی', color: 'bg-green-50 border-green-200 text-green-700' },
+  { party: 'شرکت آلفا', amount: '۵,۰۰۰,۰۰۰', date: '۱۴۰۴/۰۴/۱۶', type: 'دریافتی', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
+  { party: 'تأمین‌کننده بتا', amount: '۳,۲۰۰,۰۰۰', date: '۱۴۰۴/۰۴/۱۷', type: 'پرداختی', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
+  { party: 'شرکت گاما', amount: '۸,۵۰۰,۰۰۰', date: '۱۴۰۴/۰۴/۱۸', type: 'دریافتی', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
 ];
 
 export default function Dashboard() {
@@ -141,7 +142,7 @@ export default function Dashboard() {
               <XAxis dataKey="name" fontSize={11} />
               <YAxis fontSize={11} />
               <Tooltip
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', padding: '12px' }}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', padding: '12px', direction: 'rtl' }}
                 formatter={(value: number) => [`${value.toLocaleString()} هزار ریال`]}
               />
               <Bar dataKey="sales" fill="#3b82f6" radius={[6, 6, 0, 0]} name="فروش" />
@@ -150,12 +151,12 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Cash Flow Chart */}
+        {/* Cash Flow */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 card-hover">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-sm font-bold text-gray-800">جریان نقدینگی</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5">هفته‌های اخیر</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">دریافت و پرداخت هفتگی</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
@@ -163,32 +164,47 @@ export default function Dashboard() {
                 <span className="text-[10px] text-gray-500">دریافت</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-red-400"></div>
                 <span className="text-[10px] text-gray-500">پرداخت</span>
               </div>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={cashFlowData}>
+              <defs>
+                <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f87171" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#f87171" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" fontSize={11} />
               <YAxis fontSize={11} />
               <Tooltip
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', padding: '12px' }}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', padding: '12px', direction: 'rtl' }}
                 formatter={(value: number) => [`${value.toLocaleString()} هزار ریال`]}
               />
-              <Area type="monotone" dataKey="income" stroke="#10b981" fill="#10b98120" strokeWidth={2} name="دریافت" />
-              <Area type="monotone" dataKey="expense" stroke="#ef4444" fill="#ef444420" strokeWidth={2} name="پرداخت" />
+              <Area type="monotone" dataKey="income" stroke="#10b981" fill="url(#incomeGrad)" name="دریافت" strokeWidth={2} />
+              <Area type="monotone" dataKey="expense" stroke="#f87171" fill="url(#expenseGrad)" name="پرداخت" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Second Row */}
+      {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Category Distribution */}
+        {/* Category Pie Chart */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 card-hover">
-          <h3 className="text-sm font-bold text-gray-800 mb-4">توزیع فروش بر اساس گروه</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-gray-800">ترکیب فروش</h3>
+              <p className="text-[10px] text-gray-400 mt-0.5">بر اساس گروه کالا</p>
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie
@@ -204,116 +220,109 @@ export default function Dashboard() {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number) => [`${value}٪`]} />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', direction: 'rtl' }}
+                formatter={(value: number) => [`${value}٪`]}
+              />
             </PieChart>
           </ResponsiveContainer>
-          <div className="flex flex-wrap gap-2 mt-3">
+          <div className="grid grid-cols-2 gap-2 mt-2">
             {categoryData.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50">
+              <div key={idx} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
-                <span className="text-[10px] text-gray-600 font-medium">{item.name}</span>
-                <span className="text-[10px] text-gray-400">{item.value}٪</span>
+                <span className="text-[10px] text-gray-500">{item.name}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Low Stock Alerts */}
+        {/* Recent Activities */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 card-hover">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-              <AlertTriangle size={16} className="text-white" />
-            </div>
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-gray-800">کالاهای کم‌موجود</h3>
-              <p className="text-[10px] text-gray-400">نیاز به سفارش مجدد</p>
+              <h3 className="text-sm font-bold text-gray-800">آخرین عملیات</h3>
+              <p className="text-[10px] text-gray-400 mt-0.5">فعالیت‌های اخیر سیستم</p>
             </div>
-          </div>
-          <div className="space-y-3">
-            {lowStockItems.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-l from-amber-50/50 to-orange-50/50 border border-amber-100/80">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center`}>
-                    <Package size={14} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-700">{item.name}</p>
-                    <p className="text-[10px] text-gray-400">حداقل: {item.min} {item.unit}</p>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-black text-amber-600">{item.current}</p>
-                  <p className="text-[10px] text-gray-400">{item.unit}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Upcoming Checks */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 card-hover">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-blue-600 flex items-center justify-center">
-              <CreditCard size={16} className="text-white" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-gray-800">چک‌های نزدیک سررسید</h3>
-              <p className="text-[10px] text-gray-400">۳ روز آینده</p>
-            </div>
+            <button className="text-[10px] text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1">
+              مشاهده همه <ArrowLeft size={10} />
+            </button>
           </div>
           <div className="space-y-2.5">
-            {upcomingChecks.map((check, idx) => (
-              <div key={idx} className={`flex items-center justify-between p-3 rounded-2xl border ${check.color}`}>
-                <div>
-                  <p className="text-xs font-bold">{check.party}</p>
-                  <p className="text-[10px] opacity-70 flex items-center gap-1 mt-0.5">
-                    <Clock size={10} /> {check.date}
-                  </p>
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors group">
+                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${activity.gradient} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
+                  {activity.icon}
                 </div>
-                <div className="text-left">
-                  <p className="text-xs font-black">{check.amount}</p>
-                  <p className="text-[10px] opacity-70">{check.type}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-gray-700 font-medium truncate">{activity.desc}</p>
+                  <p className="text-[9px] text-gray-400">{activity.time}</p>
                 </div>
+                <span className="text-[11px] text-gray-600 font-bold">{activity.amount}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Recent Activities */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 card-hover">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center">
-              <Clock size={16} className="text-white" />
+        {/* Alerts & Warnings */}
+        <div className="space-y-4">
+          {/* Low Stock */}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-5 card-hover">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+                  <AlertTriangle size={14} className="text-red-500" />
+                </div>
+                <h3 className="text-xs font-bold text-gray-800">کالاهای کم‌موجود</h3>
+              </div>
+              <span className="text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold">۳ قلم</span>
             </div>
-            <h3 className="text-sm font-bold text-gray-800">آخرین عملیات</h3>
+            <div className="space-y-2">
+              {lowStockItems.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/80">
+                  <div>
+                    <p className="text-[11px] text-gray-700 font-medium">{item.name}</p>
+                    <p className="text-[9px] text-gray-400">حداقل: {item.min} {item.unit}</p>
+                  </div>
+                  <div className={`text-[11px] font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
+                    {item.current} {item.unit}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <button className="text-xs text-blue-500 hover:text-blue-700 font-medium">مشاهده همه</button>
-        </div>
-        <div className="space-y-3">
-          {recentActivities.map((activity) => (
-            <div key={activity.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50/80 transition-colors group">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${activity.color} flex items-center justify-center shadow-md text-white flex-shrink-0`}>
-                {activity.icon}
+
+          {/* Upcoming Checks */}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-5 card-hover">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <CreditCard size={14} className="text-amber-500" />
+                </div>
+                <h3 className="text-xs font-bold text-gray-800">چک‌های نزدیک سررسید</h3>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-700 truncate">{activity.desc}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{activity.time}</p>
-              </div>
-              <div className="text-left flex-shrink-0">
-                <p className="text-xs font-bold text-gray-700">{activity.amount}</p>
-                <p className="text-[10px] text-gray-400">ریال</p>
-              </div>
+              <span className="text-[9px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-bold">۳ فقره</span>
             </div>
-          ))}
+            <div className="space-y-2">
+              {upcomingChecks.map((check, idx) => (
+                <div key={idx} className={`flex items-center justify-between p-2.5 rounded-xl ${check.bg} border ${check.border}`}>
+                  <div>
+                    <p className="text-[11px] text-gray-700 font-medium">{check.party}</p>
+                    <p className="text-[9px] text-gray-400">{check.date}</p>
+                  </div>
+                  <div className="text-left">
+                    <p className={`text-[11px] font-bold ${check.text}`}>{check.amount} ریال</p>
+                    <p className="text-[9px] text-gray-400">{check.type}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// Stat Card Component
 function StatCard({ title, value, unit, change, trend, icon, gradient, shadowColor }: {
   title: string;
   value: string;
@@ -327,20 +336,18 @@ function StatCard({ title, value, unit, change, trend, icon, gradient, shadowCol
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-5 card-hover relative overflow-hidden">
       {/* Background decoration */}
-      <div className={`absolute -top-4 -left-4 w-20 h-20 rounded-full bg-gradient-to-br ${gradient} opacity-5`}></div>
+      <div className={`absolute top-0 left-0 w-20 h-20 bg-gradient-to-br ${gradient} opacity-5 rounded-full -translate-x-6 -translate-y-6`}></div>
       
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-[11px] text-gray-400 font-medium">{title}</p>
-          <p className="text-xl font-black text-gray-800 mt-2">{value}</p>
-          <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-start justify-between relative">
+        <div>
+          <p className="text-[11px] text-gray-500 font-medium">{title}</p>
+          <div className="flex items-baseline gap-1 mt-2">
+            <span className="text-xl font-black text-gray-800">{value}</span>
             <span className="text-[10px] text-gray-400">{unit}</span>
-            <span className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-              trend === 'up' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'
-            }`}>
-              {trend === 'up' ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-              {change}
-            </span>
+          </div>
+          <div className={`flex items-center gap-1 mt-2 text-[10px] font-bold ${trend === 'up' ? 'text-green-600' : 'text-red-500'}`}>
+            {trend === 'up' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+            {change} نسبت به ماه قبل
           </div>
         </div>
         <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg ${shadowColor}`}>

@@ -1,141 +1,157 @@
-import { Plus, Search, Filter, Eye, Edit, Printer, FileText, ShoppingCart, TrendingDown, Receipt } from 'lucide-react';
-import { useState } from 'react';
+import { ShoppingCart, Plus, Search, Filter, Eye, Edit, Printer, FileText, Receipt, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
 
 const purchaseInvoices = [
-  { id: 1, number: 'INV-P-567', date: '۱۴۰۴/۰۴/۱۰', supplier: 'تأمین‌کننده بتا', warehouse: 'انبار مرکزی', amount: '۸,۲۰۰,۰۰۰', status: 'قطعی', items: 5 },
-  { id: 2, number: 'INV-P-568', date: '۱۴۰۴/۰۴/۱۱', supplier: 'شرکت اپسیلون', warehouse: 'انبار شعبه ۱', amount: '۱۵,۰۰۰,۰۰۰', status: 'قطعی', items: 8 },
-  { id: 3, number: 'INV-P-569', date: '۱۴۰۴/۰۴/۱۲', supplier: 'فروشگاه دلتا', warehouse: 'انبار مرکزی', amount: '۳,۵۰۰,۰۰۰', status: 'پیش‌نویس', items: 3 },
-  { id: 4, number: 'INV-P-570', date: '۱۴۰۴/۰۴/۱۳', supplier: 'تأمین‌کننده بتا', warehouse: 'انبار شعبه ۲', amount: '۶,۸۰۰,۰۰۰', status: 'قطعی', items: 4 },
-  { id: 5, number: 'INV-P-571', date: '۱۴۰۴/۰۴/۱۴', supplier: 'شرکت اپسیلون', warehouse: 'انبار مرکزی', amount: '۱۲,۳۰۰,۰۰۰', status: 'تأییدشده', items: 6 },
+  { id: 1, number: 'خرید-۱۰۰۱', date: '۱۴۰۴/۰۴/۱۲', supplier: 'تأمین‌کننده بتا', amount: '۸,۲۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار مرکزی', payment: '۶۰٪' },
+  { id: 2, number: 'خرید-۱۰۰۲', date: '۱۴۰۴/۰۴/۱۰', supplier: 'بازرگانی زتا', amount: '۱۵,۰۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار شرق', payment: '۱۰۰٪' },
+  { id: 3, number: 'خرید-۱۰۰۳', date: '۱۴۰۴/۰۴/۰۸', supplier: 'شرکت پارس', amount: '۴,۵۰۰,۰۰۰', status: 'پیش‌نویس', warehouse: 'انبار مرکزی', payment: '۰٪' },
+  { id: 4, number: 'خرید-۱۰۰۴', date: '۱۴۰۴/۰۴/۰۵', supplier: 'تأمین‌کننده بتا', amount: '۱۲,۸۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار غرب', payment: '۴۰٪' },
+  { id: 5, number: 'خرید-۱۰۰۵', date: '۱۴۰۴/۰۴/۰۳', supplier: 'فروشگاه دلتا', amount: '۶,۳۰۰,۰۰۰', status: 'برگشتی', warehouse: 'انبار مرکزی', payment: 'برگشت' },
+];
+
+const quickActions = [
+  { title: 'فاکتور خرید جدید', icon: <Receipt size={18} />, color: 'from-blue-400 to-blue-600', desc: 'ثبت فاکتور جدید' },
+  { title: 'پیش‌فاکتور', icon: <FileText size={18} />, color: 'from-amber-400 to-amber-600', desc: 'ایجاد پیش‌فاکتور' },
+  { title: 'برگشت از خرید', icon: <TrendingDown size={18} />, color: 'from-red-400 to-red-600', desc: 'ثبت برگشت' },
+  { title: 'هزینه‌های خرید', icon: <DollarSign size={18} />, color: 'from-emerald-400 to-emerald-600', desc: 'ثبت هزینه' },
 ];
 
 export default function Purchases() {
-  const [activeTab, setActiveTab] = useState('invoices');
-
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-800">خرید</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت فاکتورها و عملیات خرید</p>
+          <p className="text-sm text-gray-500 mt-1">مدیریت فاکتورها، سفارشات و گزارش‌های خرید</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-amber-500/30 transition-all active:scale-95">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-amber-500/30 transition-all">
           <Plus size={16} />
           فاکتور خرید جدید
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { id: 'invoices', label: 'فهرست فاکتورها', icon: <Receipt size={14} /> },
-          { id: 'proforma', label: 'پیش‌فاکتور', icon: <FileText size={14} /> },
-          { id: 'returns', label: 'برگشت از خرید', icon: <TrendingDown size={14} /> },
-          { id: 'expenses', label: 'هزینه‌های خرید', icon: <ShoppingCart size={14} /> },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all ${
-              activeTab === tab.id
-                ? 'bg-amber-500 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-amber-50'
-            }`}
-          >
-            {tab.icon} {tab.label}
-          </button>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {quickActions.map((action, idx) => (
+          <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover cursor-pointer group">
+            <div className="flex items-center gap-3">
+              <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
+                {action.icon}
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-gray-800">{action.title}</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">{action.desc}</p>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">خرید این ماه</p>
-          <p className="text-lg font-bold text-gray-700">۴۵,۰۰۰,۰۰۰</p>
-          <p className="text-[10px] text-gray-400">ریال</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">تعداد فاکتور</p>
-          <p className="text-lg font-bold text-amber-600">۱۲</p>
-          <p className="text-[10px] text-gray-400">فاکتور</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">بدهی به تأمین‌کنندگان</p>
-          <p className="text-lg font-bold text-red-600">۲۸,۵۰۰,۰۰۰</p>
-          <p className="text-[10px] text-gray-400">ریال</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">پیش‌نویس</p>
-          <p className="text-lg font-bold text-blue-600">۳</p>
-          <p className="text-[10px] text-gray-400">سند</p>
-        </div>
-      </div>
-
-      {/* Search & Filter */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex-1 min-w-[200px] relative">
-            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="جست‌وجوی فاکتور..."
-              className="w-full pr-9 pl-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-100 focus:border-amber-400 outline-none"
-            />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <ShoppingCart size={18} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">خرید این ماه</p>
+              <p className="text-lg font-black text-gray-800">۴۵,۰۰۰,۰۰۰ <span className="text-[10px] text-gray-400">ریال</span></p>
+            </div>
           </div>
-          <select className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-100 outline-none">
-            <option>همه وضعیت‌ها</option>
-            <option>قطعی</option>
-            <option>پیش‌نویس</option>
-            <option>تأییدشده</option>
-          </select>
-          <button className="flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-600 text-sm rounded-xl hover:bg-gray-200">
-            <Filter size={14} /> فیلتر
-          </button>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <BarChart3 size={18} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">تعداد فاکتورها</p>
+              <p className="text-lg font-black text-gray-800">۲۴ <span className="text-[10px] text-gray-400">فاکتور</span></p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <DollarSign size={18} className="text-amber-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">مانده پرداخت</p>
+              <p className="text-lg font-black text-gray-800">۱۸,۵۰۰,۰۰۰ <span className="text-[10px] text-gray-400">ریال</span></p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Invoice Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">شماره</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">تاریخ</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">تأمین‌کننده</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">انبار</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">تعداد ردیف</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">مبلغ</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">وضعیت</th>
-              <th className="text-right py-3 px-4 text-gray-500 font-medium">عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {purchaseInvoices.map((inv) => (
-              <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                <td className="py-3 px-4 font-mono text-xs text-amber-600 font-medium">{inv.number}</td>
-                <td className="py-3 px-4 text-gray-500">{inv.date}</td>
-                <td className="py-3 px-4 font-medium">{inv.supplier}</td>
-                <td className="py-3 px-4 text-gray-500">{inv.warehouse}</td>
-                <td className="py-3 px-4 text-gray-500">{inv.items}</td>
-                <td className="py-3 px-4 font-medium">{inv.amount} <span className="text-[10px] text-gray-400">ریال</span></td>
-                <td className="py-3 px-4">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${
-                    inv.status === 'قطعی' ? 'bg-green-100 text-green-600' :
-                    inv.status === 'پیش‌نویس' ? 'bg-blue-100 text-blue-600' :
-                    'bg-amber-100 text-amber-600'
-                  }`}>{inv.status}</span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex gap-1">
-                    <button className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500"><Eye size={14} /></button>
-                    <button className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-500"><Edit size={14} /></button>
-                    <button className="p-1.5 rounded-lg hover:bg-green-50 text-green-500"><Printer size={14} /></button>
-                  </div>
-                </td>
+      {/* Invoices Table */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <div>
+            <h3 className="text-sm font-bold text-gray-800">فهرست فاکتورهای خرید</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">لیست تمام فاکتورهای ثبت شده</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200/50">
+              <Search size={14} className="text-gray-400" />
+              <input type="text" placeholder="جست‌وجو..." className="bg-transparent text-xs outline-none w-32" />
+            </div>
+            <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200/50 text-xs text-gray-600 hover:bg-gray-100 transition-colors">
+              <Filter size={14} />
+              فیلتر
+            </button>
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50/80 border-b border-gray-100">
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">شماره</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">تاریخ</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">تأمین‌کننده</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">انبار</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">مبلغ (ریال)</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">پرداخت</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">وضعیت</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">عملیات</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {purchaseInvoices.map((invoice) => (
+                <tr key={invoice.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                  <td className="py-3.5 px-5 text-xs font-mono font-bold text-gray-700">{invoice.number}</td>
+                  <td className="py-3.5 px-5 text-xs text-gray-600">{invoice.date}</td>
+                  <td className="py-3.5 px-5 text-xs font-medium text-gray-800">{invoice.supplier}</td>
+                  <td className="py-3.5 px-5 text-xs text-gray-500">{invoice.warehouse}</td>
+                  <td className="py-3.5 px-5 text-xs font-bold text-gray-700">{invoice.amount}</td>
+                  <td className="py-3.5 px-5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600" style={{ width: invoice.payment === '۱۰۰٪' ? '100%' : invoice.payment === '۶۰٪' ? '60%' : invoice.payment === '۴۰٪' ? '40%' : invoice.payment === 'برگشت' ? '0%' : '0%' }}></div>
+                      </div>
+                      <span className="text-[10px] text-gray-500">{invoice.payment}</span>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-5">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                      invoice.status === 'قطعی' ? 'bg-green-50 text-green-600' :
+                      invoice.status === 'پیش‌نویس' ? 'bg-amber-50 text-amber-600' :
+                      'bg-red-50 text-red-600'
+                    }`}>{invoice.status}</span>
+                  </td>
+                  <td className="py-3.5 px-5">
+                    <div className="flex items-center gap-1">
+                      <button className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"><Eye size={13} /></button>
+                      <button className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-500 transition-colors"><Edit size={13} /></button>
+                      <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"><Printer size={13} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

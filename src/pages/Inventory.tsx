@@ -1,197 +1,168 @@
-import { Plus, Search, Filter, Package, ArrowRightLeft, AlertTriangle, BarChart3, ClipboardList } from 'lucide-react';
-import { useState } from 'react';
+import { Package, Plus, Search, Filter, ArrowRightLeft, ClipboardList, AlertTriangle, BarChart3, FileText, Edit, Eye } from 'lucide-react';
 
-const items = [
-  { id: 1, code: 'ITM-001', name: 'لپ‌تاپ ایسوس VivoBook', group: 'لپ‌تاپ', unit: 'عدد', stock: 2, minStock: 5, price: '۴۵,۰۰۰,۰۰۰', warehouse: 'انبار مرکزی' },
-  { id: 2, code: 'ITM-002', name: 'ماوس بی‌سیم لاجیتک', group: 'لوازم جانبی', unit: 'عدد', stock: 45, minStock: 10, price: '۸۵۰,۰۰۰', warehouse: 'انبار مرکزی' },
-  { id: 3, code: 'ITM-003', name: 'کیبورد مکانیکال', group: 'لوازم جانبی', unit: 'عدد', stock: 18, minStock: 8, price: '۲,۵۰۰,۰۰۰', warehouse: 'انبار شعبه ۱' },
-  { id: 4, code: 'ITM-004', name: 'مانیتور ۲۷ اینچ', group: 'مانیتور', unit: 'عدد', stock: 7, minStock: 5, price: '۱۸,۰۰۰,۰۰۰', warehouse: 'انبار مرکزی' },
-  { id: 5, code: 'ITM-005', name: 'کابل HDMI 2m', group: 'کابل', unit: 'عدد', stock: 5, minStock: 20, price: '۱۵۰,۰۰۰', warehouse: 'انبار شعبه ۲' },
-  { id: 6, code: 'ITM-006', name: 'هارد اکسترنال ۱TB', group: 'ذخیره‌سازی', unit: 'عدد', stock: 12, minStock: 5, price: '۳,۲۰۰,۰۰۰', warehouse: 'انبار مرکزی' },
-  { id: 7, code: 'ITM-007', name: 'فلش مموری ۶۴GB', group: 'ذخیره‌سازی', unit: 'عدد', stock: 3, minStock: 15, price: '۴۵۰,۰۰۰', warehouse: 'انبار شعبه ۱' },
+const inventoryItems = [
+  { id: 1, code: 'K-001', name: 'لپ‌تاپ ایسوس VivoBook', group: 'کالای دیجیتال', unit: 'عدد', stock: 2, min: 5, price: '۳۵,۰۰۰,۰۰۰', warehouse: 'انبار مرکزی', status: 'کم' },
+  { id: 2, code: 'K-002', name: 'ماوس بی‌سیم لاجیتک', group: 'لوازم جانبی', unit: 'عدد', stock: 3, min: 10, price: '۸۵۰,۰۰۰', warehouse: 'انبار مرکزی', status: 'کم' },
+  { id: 3, code: 'K-003', name: 'کابل HDMI 2 متر', group: 'لوازم جانبی', unit: 'عدد', stock: 5, min: 20, price: '۱۲۰,۰۰۰', warehouse: 'انبار شرق', status: 'کم' },
+  { id: 4, code: 'K-004', name: 'مانیتور سامسونگ ۲۴ اینچ', group: 'کالای دیجیتال', unit: 'عدد', stock: 15, min: 5, price: '۱۲,۰۰۰,۰۰۰', warehouse: 'انبار مرکزی', status: 'نرمال' },
+  { id: 5, code: 'K-005', name: 'کیبورد مکانیکی', group: 'لوازم جانبی', unit: 'عدد', stock: 28, min: 10, price: '۲,۵۰۰,۰۰۰', warehouse: 'انبار غرب', status: 'نرمال' },
+  { id: 6, code: 'K-006', name: 'هارد اکسترنال ۱ ترابایت', group: 'ذخیره‌سازی', unit: 'عدد', stock: 42, min: 15, price: '۳,۸۰۰,۰۰۰', warehouse: 'انبار مرکزی', status: 'نرمال' },
+  { id: 7, code: 'K-007', name: 'فلش مموری ۶۴ گیگ', group: 'ذخیره‌سازی', unit: 'عدد', stock: 85, min: 30, price: '۴۵۰,۰۰۰', warehouse: 'انبار شرق', status: 'نرمال' },
 ];
 
-const movements = [
-  { id: 1, date: '۱۴۰۴/۰۴/۱۴', item: 'لپ‌تاپ ایسوس', type: 'ورود', qty: 5, warehouse: 'انبار مرکزی', ref: 'INV-P-567' },
-  { id: 2, date: '۱۴۰۴/۰۴/۱۳', item: 'ماوس بی‌سیم', type: 'خروج', qty: 10, warehouse: 'انبار مرکزی', ref: 'INV-S-1237' },
-  { id: 3, date: '۱۴۰۴/۰۴/۱۲', item: 'کابل HDMI', type: 'انتقال', qty: 20, warehouse: 'انبار مرکزی → شعبه ۲', ref: 'TRF-003' },
-  { id: 4, date: '۱۴۰۴/۰۴/۱۱', item: 'مانیتور ۲۷', type: 'ورود', qty: 3, warehouse: 'انبار مرکزی', ref: 'INV-P-568' },
+const quickActions = [
+  { title: 'رسید ورود', icon: <ArrowRightLeft size={18} />, color: 'from-green-400 to-green-600', desc: 'ورود کالا به انبار' },
+  { title: 'حواله خروج', icon: <ArrowRightLeft size={18} />, color: 'from-red-400 to-red-600', desc: 'خروج کالا از انبار' },
+  { title: 'انتقال بین انبار', icon: <ArrowRightLeft size={18} />, color: 'from-blue-400 to-blue-600', desc: 'جابجایی بین انبارها' },
+  { title: 'انبارگردانی', icon: <ClipboardList size={18} />, color: 'from-amber-400 to-amber-600', desc: 'شمارش موجودی' },
 ];
 
 export default function Inventory() {
-  const [activeTab, setActiveTab] = useState('items');
-
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-800">انبار و کالا</h1>
-          <p className="text-sm text-gray-500 mt-1">مدیریت موجودی و عملیات انبار</p>
+          <p className="text-sm text-gray-500 mt-1">مدیریت موجودی، کالاها و عملیات انبار</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-cyan-500/30 transition-all active:scale-95">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-teal-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
           <Plus size={16} />
           کالای جدید
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { id: 'items', label: 'فهرست کالا', icon: <Package size={14} /> },
-          { id: 'movements', label: 'گردش انبار', icon: <ArrowRightLeft size={14} /> },
-          { id: 'receipt', label: 'رسید ورود', icon: <Plus size={14} /> },
-          { id: 'issue', label: 'حواله خروج', icon: <ArrowRightLeft size={14} /> },
-          { id: 'stocktake', label: 'انبارگردانی', icon: <ClipboardList size={14} /> },
-          { id: 'lowstock', label: 'کم‌موجود', icon: <AlertTriangle size={14} /> },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all ${
-              activeTab === tab.id
-                ? 'bg-cyan-500 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-cyan-50'
-            }`}
-          >
-            {tab.icon} {tab.label}
-          </button>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {quickActions.map((action, idx) => (
+          <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover cursor-pointer group">
+            <div className="flex items-center gap-3">
+              <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
+                {action.icon}
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-gray-800">{action.title}</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">{action.desc}</p>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">تعداد کالا</p>
-          <p className="text-lg font-bold text-gray-700">۱,۲۵۰</p>
-          <p className="text-[10px] text-gray-400">قلم</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">ارزش موجودی</p>
-          <p className="text-lg font-bold text-cyan-600">۸۵۰M</p>
-          <p className="text-[10px] text-gray-400">ریال</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">کم‌موجود</p>
-          <p className="text-lg font-bold text-amber-600">۸</p>
-          <p className="text-[10px] text-gray-400">قلم</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-[10px] text-gray-400">گردش امروز</p>
-          <p className="text-lg font-bold text-blue-600">۱۲</p>
-          <p className="text-[10px] text-gray-400">عملیات</p>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex-1 min-w-[200px] relative">
-            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="جست‌وجوی کالا..."
-              className="w-full pr-9 pl-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-400 outline-none"
-            />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-100 flex items-center justify-center">
+              <Package size={18} className="text-cyan-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">کل کالاها</p>
+              <p className="text-lg font-black text-gray-800">۱,۲۵۰</p>
+            </div>
           </div>
-          <select className="px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none">
-            <option>همه انبارها</option>
-            <option>انبار مرکزی</option>
-            <option>انبار شعبه ۱</option>
-            <option>انبار شعبه ۲</option>
-          </select>
-          <select className="px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none">
-            <option>همه گروه‌ها</option>
-            <option>لپ‌تاپ</option>
-            <option>لوازم جانبی</option>
-          </select>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+              <AlertTriangle size={18} className="text-red-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">کم‌موجود</p>
+              <p className="text-lg font-black text-gray-800">۱۲</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <BarChart3 size={18} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">ارزش موجودی</p>
+              <p className="text-lg font-black text-gray-800">۸.۵ <span className="text-[10px] text-gray-400">میلیارد ریال</span></p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-4 card-hover">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+              <Package size={18} className="text-purple-600" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">تعداد انبارها</p>
+              <p className="text-lg font-black text-gray-800">۳</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Items Table */}
-      {activeTab === 'items' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
+      {/* Inventory Table */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <div>
+            <h3 className="text-sm font-bold text-gray-800">فهرست کالا و موجودی</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">لیست کالاها و وضعیت موجودی</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200/50">
+              <Search size={14} className="text-gray-400" />
+              <input type="text" placeholder="جست‌وجوی کالا..." className="bg-transparent text-xs outline-none w-36" />
+            </div>
+            <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 border border-red-200/50 text-xs text-red-600 hover:bg-red-100 transition-colors">
+              <AlertTriangle size={14} />
+              کم‌موجود (۳)
+            </button>
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">کد</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">نام کالا</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">گروه</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">موجودی</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">حداقل</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">قیمت</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">انبار</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">وضعیت</th>
+              <tr className="bg-gray-50/80 border-b border-gray-100">
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">کد</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">نام کالا</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">گروه</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">موجودی</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">حداقل</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">قیمت (ریال)</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">انبار</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">وضعیت</th>
+                <th className="text-right py-3 px-5 text-[11px] font-bold text-gray-500">عملیات</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 px-4 font-mono text-xs text-cyan-600">{item.code}</td>
-                  <td className="py-3 px-4 font-medium">{item.name}</td>
-                  <td className="py-3 px-4 text-gray-500">{item.group}</td>
-                  <td className="py-3 px-4 font-medium">{item.stock} {item.unit}</td>
-                  <td className="py-3 px-4 text-gray-500">{item.minStock}</td>
-                  <td className="py-3 px-4">{item.price} <span className="text-[10px] text-gray-400">ریال</span></td>
-                  <td className="py-3 px-4 text-gray-500">{item.warehouse}</td>
-                  <td className="py-3 px-4">
-                    {item.stock <= item.minStock ? (
-                      <span className="flex items-center gap-1 text-red-500 text-xs">
-                        <AlertTriangle size={12} /> کم‌موجود
-                      </span>
-                    ) : (
-                      <span className="text-green-500 text-xs">موجود</span>
-                    )}
+              {inventoryItems.map((item) => (
+                <tr key={item.id} className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${item.status === 'کم' ? 'bg-red-50/30' : ''}`}>
+                  <td className="py-3 px-5 text-xs font-mono font-bold text-gray-600">{item.code}</td>
+                  <td className="py-3.5 px-5 text-xs font-medium text-gray-800">{item.name}</td>
+                  <td className="py-3.5 px-5 text-xs text-gray-500">{item.group}</td>
+                  <td className="py-3.5 px-5">
+                    <span className={`text-xs font-bold ${item.stock <= item.min ? 'text-red-600' : 'text-gray-700'}`}>
+                      {item.stock} {item.unit}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-5 text-xs text-gray-500">{item.min} {item.unit}</td>
+                  <td className="py-3.5 px-5 text-xs font-bold text-gray-700">{item.price}</td>
+                  <td className="py-3.5 px-5 text-xs text-gray-500">{item.warehouse}</td>
+                  <td className="py-3.5 px-5">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                      item.status === 'کم' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+                    }`}>{item.status}</span>
+                  </td>
+                  <td className="py-3.5 px-5">
+                    <div className="flex items-center gap-1">
+                      <button className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"><Eye size={13} /></button>
+                      <button className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-500 transition-colors"><Edit size={13} /></button>
+                      <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"><FileText size={13} /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      )}
-
-      {/* Movements */}
-      {activeTab === 'movements' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">تاریخ</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">کالا</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">نوع</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">تعداد</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">انبار</th>
-                <th className="text-right py-3 px-4 text-gray-500 font-medium">سند مرجع</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movements.map((m) => (
-                <tr key={m.id} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="py-3 px-4 text-gray-500">{m.date}</td>
-                  <td className="py-3 px-4 font-medium">{m.item}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${
-                      m.type === 'ورود' ? 'bg-green-100 text-green-600' :
-                      m.type === 'خروج' ? 'bg-red-100 text-red-600' :
-                      'bg-blue-100 text-blue-600'
-                    }`}>{m.type}</span>
-                  </td>
-                  <td className="py-3 px-4">{m.qty}</td>
-                  <td className="py-3 px-4 text-gray-500">{m.warehouse}</td>
-                  <td className="py-3 px-4 font-mono text-xs text-cyan-600">{m.ref}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab !== 'items' && activeTab !== 'movements' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          <Package size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">این بخش آماده پیاده‌سازی است</p>
-          <p className="text-xs text-gray-400 mt-2">عملیات مربوط به این بخش در نسخه نهایی فعال خواهد شد</p>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
