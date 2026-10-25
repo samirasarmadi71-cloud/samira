@@ -29,10 +29,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       await initDatabase();
       setDbReady(true);
 
-      // Check credentials
-      const users = execQuery(`SELECT * FROM users WHERE username = '${username}' AND is_active = 1`);
+      // Check credentials - using parameterized query
+      const users = execQuery(`SELECT * FROM users WHERE username = ? AND is_active = 1`, [username]);
       
-      if (users.length === 0) {
+      if (!users || users.length === 0) {
+        console.warn('User not found or inactive:', username);
         setError('نام کاربری یا رمز عبور اشتباه است');
         setAttempts(prev => prev + 1);
         setLoading(false);
@@ -40,7 +41,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       }
 
       const user = users[0];
+      console.log('User found:', user);
+      
       if (user.password_hash !== password) {
+        console.warn('Password mismatch for user:', username);
         setError('نام کاربری یا رمز عبور اشتباه است');
         setAttempts(prev => prev + 1);
         setLoading(false);
