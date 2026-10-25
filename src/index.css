@@ -147,26 +147,23 @@ body {
   -webkit-backdrop-filter: blur(20px);
 }
 
-.circle-icon {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
-  pointer-events: auto;
-  position: relative;
-  z-index: 1;
+/* Dock tooltip on hover */
+button:hover .dock-tooltip {
+  opacity: 1 !important;
 }
 
-.circle-icon:hover {
-  transform: translateY(-6px) scale(1.1);
-  z-index: 10;
+/* Button reset for all interactive elements */
+button {
+  font-family: inherit;
 }
 
-.circle-icon:active {
-  transform: translateY(-2px) scale(0.95);
+button:focus {
+  outline: none;
 }
 
-.circle-icon.active {
-  transform: translateY(-8px) scale(1.15);
-  z-index: 10;
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 
 .sidebar-item {

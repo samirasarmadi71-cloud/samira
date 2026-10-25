@@ -26,33 +26,21 @@ interface LayoutProps {
   onDismissNotification: (id: number) => void;
 }
 
-interface SubMenuItem {
-  label: string;
-  icon: ReactNode;
-}
-
 interface MenuItem {
   id: PageType;
   label: string;
   icon: ReactNode;
   color: string;
-  bgColor: string;
   gradientFrom: string;
   gradientTo: string;
   shadowColor: string;
-  subItems: SubMenuItem[];
+  subItems: { label: string; icon: ReactNode }[];
 }
 
 const menuItems: MenuItem[] = [
   {
-    id: 'dashboard',
-    label: 'داشبورد',
-    icon: <LayoutDashboard size={22} />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500',
-    gradientFrom: '#3b82f6',
-    gradientTo: '#1d4ed8',
-    shadowColor: 'shadow-blue-500/40',
+    id: 'dashboard', label: 'داشبورد', icon: <LayoutDashboard size={22} />,
+    color: 'text-blue-600', gradientFrom: '#3b82f6', gradientTo: '#1d4ed8', shadowColor: 'shadow-blue-500/40',
     subItems: [
       { label: 'نمای کلی', icon: <LayoutDashboard size={15} /> },
       { label: 'وضعیت مالی', icon: <DollarSign size={15} /> },
@@ -63,14 +51,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'base-data',
-    label: 'اطلاعات پایه',
-    icon: <Database size={22} />,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-500',
-    gradientFrom: '#10b981',
-    gradientTo: '#047857',
-    shadowColor: 'shadow-emerald-500/40',
+    id: 'base-data', label: 'اطلاعات پایه', icon: <Database size={22} />,
+    color: 'text-emerald-600', gradientFrom: '#10b981', gradientTo: '#047857', shadowColor: 'shadow-emerald-500/40',
     subItems: [
       { label: 'اطلاعات شرکت', icon: <Building2 size={15} /> },
       { label: 'سال مالی و دوره‌ها', icon: <Calendar size={15} /> },
@@ -84,29 +66,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'chart-of-accounts',
-    label: 'کدینگ حساب‌ها',
-    icon: <FileText size={22} />,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-500',
-    gradientFrom: '#ec4899',
-    gradientTo: '#db2777',
-    shadowColor: 'shadow-pink-500/40',
-    subItems: [
-      { label: 'حساب‌های کل', icon: <FileText size={15} /> },
-      { label: 'حساب‌های معین', icon: <FileText size={15} /> },
-      { label: 'حساب‌های تفصیلی', icon: <FileText size={15} /> },
-    ]
-  },
-  {
-    id: 'contacts',
-    label: 'معرفی اشخاص',
-    icon: <Users size={22} />,
-    color: 'text-violet-600',
-    bgColor: 'bg-violet-500',
-    gradientFrom: '#8b5cf6',
-    gradientTo: '#6d28d9',
-    shadowColor: 'shadow-violet-500/40',
+    id: 'contacts', label: 'معرفی اشخاص', icon: <Users size={22} />,
+    color: 'text-violet-600', gradientFrom: '#8b5cf6', gradientTo: '#6d28d9', shadowColor: 'shadow-violet-500/40',
     subItems: [
       { label: 'فهرست اشخاص', icon: <Users size={15} /> },
       { label: 'شخص جدید', icon: <UserPlus size={15} /> },
@@ -118,14 +79,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'purchases',
-    label: 'خرید',
-    icon: <ShoppingCart size={22} />,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-500',
-    gradientFrom: '#f59e0b',
-    gradientTo: '#d97706',
-    shadowColor: 'shadow-amber-500/40',
+    id: 'purchases', label: 'خرید', icon: <ShoppingCart size={22} />,
+    color: 'text-amber-600', gradientFrom: '#f59e0b', gradientTo: '#d97706', shadowColor: 'shadow-amber-500/40',
     subItems: [
       { label: 'فاکتور خرید جدید', icon: <Receipt size={15} /> },
       { label: 'فهرست فاکتورها', icon: <ClipboardList size={15} /> },
@@ -136,14 +91,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'sales',
-    label: 'فروش',
-    icon: <TrendingUp size={22} />,
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-500',
-    gradientFrom: '#f43f5e',
-    gradientTo: '#e11d48',
-    shadowColor: 'shadow-rose-500/40',
+    id: 'sales', label: 'فروش', icon: <TrendingUp size={22} />,
+    color: 'text-rose-600', gradientFrom: '#f43f5e', gradientTo: '#e11d48', shadowColor: 'shadow-rose-500/40',
     subItems: [
       { label: 'فاکتور فروش جدید', icon: <Receipt size={15} /> },
       { label: 'فهرست فاکتورها', icon: <ClipboardList size={15} /> },
@@ -154,14 +103,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'inventory',
-    label: 'انبار و کالا',
-    icon: <Package size={22} />,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-500',
-    gradientFrom: '#06b6d4',
-    gradientTo: '#0891b2',
-    shadowColor: 'shadow-cyan-500/40',
+    id: 'inventory', label: 'انبار و کالا', icon: <Package size={22} />,
+    color: 'text-cyan-600', gradientFrom: '#06b6d4', gradientTo: '#0891b2', shadowColor: 'shadow-cyan-500/40',
     subItems: [
       { label: 'فهرست کالا و خدمات', icon: <Package size={15} /> },
       { label: 'رسید ورود', icon: <ArrowRightLeft size={15} /> },
@@ -174,14 +117,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'treasury',
-    label: 'چک و خزانه',
-    icon: <Landmark size={22} />,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-500',
-    gradientFrom: '#6366f1',
-    gradientTo: '#4338ca',
-    shadowColor: 'shadow-indigo-500/40',
+    id: 'treasury', label: 'چک و خزانه', icon: <Landmark size={22} />,
+    color: 'text-indigo-600', gradientFrom: '#6366f1', gradientTo: '#4338ca', shadowColor: 'shadow-indigo-500/40',
     subItems: [
       { label: 'دریافت وجه', icon: <Banknote size={15} /> },
       { label: 'پرداخت وجه', icon: <DollarSign size={15} /> },
@@ -194,14 +131,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'reports',
-    label: 'گزارشات',
-    icon: <BarChart3 size={22} />,
-    color: 'text-teal-600',
-    bgColor: 'bg-teal-500',
-    gradientFrom: '#14b8a6',
-    gradientTo: '#0d9488',
-    shadowColor: 'shadow-teal-500/40',
+    id: 'reports', label: 'گزارشات', icon: <BarChart3 size={22} />,
+    color: 'text-teal-600', gradientFrom: '#14b8a6', gradientTo: '#0d9488', shadowColor: 'shadow-teal-500/40',
     subItems: [
       { label: 'فروش و خرید', icon: <BarChart3 size={15} /> },
       { label: 'موجودی و گردش کالا', icon: <Package size={15} /> },
@@ -215,14 +146,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'accounting',
-    label: 'اسناد حسابداری',
-    icon: <BookOpen size={22} />,
-    color: 'text-fuchsia-600',
-    bgColor: 'bg-fuchsia-500',
-    gradientFrom: '#d946ef',
-    gradientTo: '#c026d3',
-    shadowColor: 'shadow-fuchsia-500/40',
+    id: 'accounting', label: 'اسناد حسابداری', icon: <BookOpen size={22} />,
+    color: 'text-fuchsia-600', gradientFrom: '#d946ef', gradientTo: '#c026d3', shadowColor: 'shadow-fuchsia-500/40',
     subItems: [
       { label: 'ثبت سند', icon: <PenTool size={15} /> },
       { label: 'فهرست اسناد', icon: <ClipboardList size={15} /> },
@@ -233,14 +158,8 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
-    id: 'settings',
-    label: 'تنظیمات',
-    icon: <Settings size={22} />,
-    color: 'text-slate-600',
-    bgColor: 'bg-slate-500',
-    gradientFrom: '#64748b',
-    gradientTo: '#475569',
-    shadowColor: 'shadow-slate-500/40',
+    id: 'settings', label: 'تنظیمات', icon: <Settings size={22} />,
+    color: 'text-slate-600', gradientFrom: '#64748b', gradientTo: '#475569', shadowColor: 'shadow-slate-500/40',
     subItems: [
       { label: 'کاربران و مجوزها', icon: <Users size={15} /> },
       { label: 'ظاهر', icon: <Palette size={15} /> },
@@ -252,16 +171,36 @@ const menuItems: MenuItem[] = [
       { label: 'اطلاعات نسخه', icon: <Info size={15} /> },
     ]
   },
+  {
+    id: 'chart-of-accounts', label: 'کدینگ حساب‌ها', icon: <FileText size={22} />,
+    color: 'text-pink-600', gradientFrom: '#ec4899', gradientTo: '#db2777', shadowColor: 'shadow-pink-500/40',
+    subItems: [
+      { label: 'حساب‌های کل', icon: <FileText size={15} /> },
+      { label: 'حساب‌های معین', icon: <FileText size={15} /> },
+      { label: 'حساب‌های تفصیلی', icon: <FileText size={15} /> },
+    ]
+  },
 ];
 
-export default function Layout({ children, currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, darkMode, setDarkMode, user, onLogout, notifications, onDismissNotification }: LayoutProps) {
-  const [expandedMenu, setExpandedMenu] = useState<PageType | null>(currentPage);
+export default function Layout({ 
+  children, currentPage, setCurrentPage, 
+  sidebarOpen, setSidebarOpen, 
+  darkMode, setDarkMode, 
+  user, onLogout, 
+  notifications, onDismissNotification 
+}: LayoutProps) {
+  const [expandedMenu, setExpandedMenu] = useState<PageType>(currentPage);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const toggleMenu = (id: PageType) => {
+  const handleMenuClick = (id: PageType) => {
+    setExpandedMenu(id);
+    setCurrentPage(id);
+  };
+
+  const handleSidebarToggle = (id: PageType) => {
     if (expandedMenu === id) {
-      setExpandedMenu(null);
+      setExpandedMenu('dashboard');
     } else {
       setExpandedMenu(id);
       setCurrentPage(id);
@@ -271,103 +210,172 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
   const currentItem = menuItems.find(m => m.id === currentPage);
 
   return (
-    <div className={`flex h-screen w-screen overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-[#f0f4f8]'}`}>
-      {/* Slim Sidebar */}
-      <aside 
-        className={`
-          ${sidebarOpen ? 'w-64 min-w-[256px] pointer-events-auto' : 'w-0 min-w-0 pointer-events-none'} 
-          transition-all duration-300 ease-in-out 
-          ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} 
-          border-l flex flex-col shadow-sm z-20 relative
-        `}
-        style={{ overflow: sidebarOpen ? 'visible' : 'hidden' }}
+    <div className="flex h-screen w-screen" style={{ direction: 'rtl' }}>
+      {/* Sidebar */}
+      <div 
+        style={{ 
+          width: sidebarOpen ? '256px' : '0px',
+          minWidth: sidebarOpen ? '256px' : '0px',
+          transition: 'all 0.3s ease-in-out',
+          overflow: sidebarOpen ? 'visible' : 'hidden',
+          background: darkMode ? '#1f2937' : '#ffffff',
+          borderLeft: sidebarOpen ? (darkMode ? '1px solid #374151' : '1px solid #f3f4f6') : 'none',
+          boxShadow: sidebarOpen ? '2px 0 8px rgba(0,0,0,0.05)' : 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          zIndex: 30
+        }}
       >
-        {/* Sidebar Logo */}
-        <div className={`h-16 flex items-center justify-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'} px-4`}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <BookOpen size={18} className="text-white" />
+        {/* Logo */}
+        <div style={{ 
+          height: '64px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          borderBottom: darkMode ? '1px solid #374151' : '1px solid #f3f4f6',
+          padding: '0 16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '12px',
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+            }}>
+              <BookOpen size={18} color="white" />
             </div>
             <div>
-              <h1 className={`text-base font-black ${darkMode ? 'text-white' : 'text-gray-800'}`}>سَرمد</h1>
-              <p className={`text-[9px] ${darkMode ? 'text-gray-400' : 'text-gray-400'} font-medium -mt-0.5`}>حسابداری هوشمند</p>
+              <h1 style={{ fontSize: '16px', fontWeight: 900, color: darkMode ? 'white' : '#1f2937', margin: 0 }}>سَرمد</h1>
+              <p style={{ fontSize: '9px', color: '#9ca3af', margin: 0, marginTop: '-2px' }}>حسابداری هوشمند</p>
             </div>
           </div>
         </div>
 
         {/* SQLite Badge */}
-        <div className={`mx-3 mt-2 p-2 rounded-xl ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-blue-50 border-blue-100'} border flex items-center justify-between`}>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-            <span className={`text-[10px] ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>SQLite فعال</span>
+        <div style={{
+          margin: '8px 12px', padding: '8px 12px', borderRadius: '12px',
+          background: darkMode ? 'rgba(55, 65, 81, 0.5)' : '#eff6ff',
+          border: darkMode ? '1px solid #4b5563' : '1px solid #dbeafe',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', animation: 'pulse 2s infinite' }}></div>
+            <span style={{ fontSize: '10px', color: darkMode ? '#d1d5db' : '#4b5563', fontWeight: 500 }}>SQLite فعال</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Shield size={11} className="text-green-500" />
-            <Wifi size={11} className="text-blue-400" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Shield size={11} color="#22c55e" />
+            <Wifi size={11} color="#60a5fa" />
           </div>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav className="flex-1 overflow-y-auto overflow-x-visible py-3 px-2.5 relative z-10">
-          <div className="px-3 mb-2">
-            <span className={`text-[10px] font-bold ${darkMode ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>منوی اصلی</span>
-          </div>
-          
+        {/* Menu Label */}
+        <div style={{ padding: '12px 12px 4px 12px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#9ca3af', letterSpacing: '0.05em' }}>منوی اصلی</span>
+        </div>
+
+        {/* Navigation */}
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
           {menuItems.map((item) => (
-            <div key={item.id} className="mb-0.5">
+            <div key={item.id} style={{ marginBottom: '2px' }}>
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleMenu(item.id);
+                onClick={() => handleSidebarToggle(item.id)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: expandedMenu === item.id 
+                    ? (darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb') 
+                    : 'transparent',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                  textAlign: 'right'
                 }}
-                type="button"
-                className={`sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 group relative cursor-pointer pointer-events-auto
-                  ${expandedMenu === item.id
-                    ? darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
-                    : darkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-50/80'
+                onMouseEnter={(e) => {
+                  if (expandedMenu !== item.id) {
+                    e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.3)' : 'rgba(249, 250, 251, 0.8)';
                   }
-                `}
+                }}
+                onMouseLeave={(e) => {
+                  if (expandedMenu !== item.id) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
               >
+                {/* Active indicator */}
                 {currentPage === item.id && (
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-full" style={{ background: `linear-gradient(to bottom, ${item.gradientFrom}, ${item.gradientTo})` }}></div>
+                  <div style={{
+                    position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)',
+                    width: '4px', height: '24px', borderRadius: '4px',
+                    background: `linear-gradient(to bottom, ${item.gradientFrom}, ${item.gradientTo})`
+                  }}></div>
                 )}
-                
-                <div 
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                    expandedMenu === item.id 
-                      ? 'text-white shadow-md' 
-                      : darkMode ? 'text-gray-400 group-hover:text-gray-200 bg-gray-700 group-hover:bg-gray-600' : 'text-gray-400 group-hover:text-gray-600 bg-gray-100 group-hover:bg-gray-200'
-                  }`}
-                  style={expandedMenu === item.id ? { background: `linear-gradient(135deg, ${item.gradientFrom}, ${item.gradientTo})` } : {}}
-                >
+
+                {/* Icon */}
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: expandedMenu === item.id 
+                    ? `linear-gradient(135deg, ${item.gradientFrom}, ${item.gradientTo})`
+                    : (darkMode ? '#374151' : '#f3f4f6'),
+                  color: expandedMenu === item.id ? 'white' : (darkMode ? '#9ca3af' : '#6b7280'),
+                  transition: 'all 0.2s',
+                  boxShadow: expandedMenu === item.id ? '0 2px 8px rgba(0,0,0,0.15)' : 'none'
+                }}>
                   {item.icon}
                 </div>
-                
-                <span className={`flex-1 text-right text-xs font-semibold transition-colors ${
-                  expandedMenu === item.id 
-                    ? darkMode ? 'text-white' : 'text-gray-800' 
-                    : darkMode ? 'text-gray-400 group-hover:text-gray-200' : 'text-gray-500 group-hover:text-gray-700'
-                }`}>
+
+                {/* Label */}
+                <span style={{
+                  flex: 1, textAlign: 'right', fontSize: '12px', fontWeight: 600,
+                  color: expandedMenu === item.id 
+                    ? (darkMode ? 'white' : '#1f2937')
+                    : (darkMode ? '#9ca3af' : '#6b7280')
+                }}>
                   {item.label}
                 </span>
-                
+
+                {/* Chevron */}
                 {expandedMenu === item.id && (
-                  <ChevronDown size={12} className={`${darkMode ? 'text-gray-400' : 'text-gray-400'} rotate-180 transition-transform`} />
+                  <ChevronDown size={12} color="#9ca3af" style={{ transform: 'rotate(180deg)' }} />
                 )}
               </button>
 
+              {/* Submenu */}
               {expandedMenu === item.id && (
-                <div className={`mt-1 mr-4 border-r ${darkMode ? 'border-gray-700' : 'border-gray-100'} pr-2.5 animate-fade-in`}>
+                <div style={{
+                  marginTop: '4px', marginRight: '16px',
+                  borderRight: darkMode ? '1px solid #374151' : '1px solid #f3f4f6',
+                  paddingRight: '10px',
+                  animation: 'fadeIn 0.2s ease-out'
+                }}>
                   {item.subItems.map((sub, idx) => (
                     <button
                       key={idx}
-                      type="button"
                       onClick={() => setCurrentPage(item.id)}
-                      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg ${darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'} transition-all text-[11px] group/sub cursor-pointer`}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                        padding: '6px 12px', borderRadius: '8px', border: 'none',
+                        cursor: 'pointer', background: 'transparent',
+                        color: darkMode ? '#9ca3af' : '#9ca3af',
+                        fontSize: '11px', transition: 'all 0.2s', textAlign: 'right'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb';
+                        e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#374151';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = darkMode ? '#9ca3af' : '#9ca3af';
+                      }}
                     >
-                      <span className={`${item.color} opacity-50 group-hover/sub:opacity-100 transition-opacity`}>{sub.icon}</span>
-                      <span className="group-hover/sub:translate-x-[-2px] transition-transform">{sub.label}</span>
+                      <span style={{ color: item.color, opacity: 0.6 }}>{sub.icon}</span>
+                      <span>{sub.label}</span>
                     </button>
                   ))}
                 </div>
@@ -376,104 +384,189 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
           ))}
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className={`p-2.5 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-          <div className={`flex items-center gap-2 px-2.5 py-2 rounded-xl ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-100'} border`}>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-sm">
-              <User size={14} className="text-white" />
+        {/* User Footer */}
+        <div style={{
+          padding: '10px', borderTop: darkMode ? '1px solid #374151' : '1px solid #f3f4f6'
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
+            borderRadius: '12px', background: darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb',
+            border: darkMode ? '1px solid #4b5563' : '1px solid #f3f4f6'
+          }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4ade80, #16a34a)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <User size={14} color="white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-[11px] font-bold ${darkMode ? 'text-white' : 'text-gray-700'} truncate`}>{user.fullName}</p>
-              <p className="text-[9px] text-green-500 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse"></span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, color: darkMode ? 'white' : '#374151', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user.fullName}
+              </p>
+              <p style={{ fontSize: '9px', color: '#22c55e', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80', display: 'inline-block' }}></span>
                 {user.role === 'admin' ? 'مدیر سیستم' : user.role}
               </p>
             </div>
-            <button onClick={onLogout} className={`${darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-gray-600' : 'text-gray-400 hover:text-red-400 hover:bg-red-50'} transition-colors p-1 rounded-lg`} title="خروج">
+            <button
+              onClick={onLogout}
+              style={{
+                padding: '4px', borderRadius: '8px', border: 'none',
+                background: 'transparent', cursor: 'pointer', color: '#9ca3af',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#fef2f2';
+                e.currentTarget.style.color = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#9ca3af';
+              }}
+              title="خروج"
+            >
               <LogOut size={14} />
             </button>
           </div>
         </div>
-      </aside>
+      </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Circular Menu Bar */}
-        <header className={`${darkMode ? 'bg-gray-800/90 border-gray-700' : 'glass-effect border-gray-200/50'} border-b z-10 relative overflow-visible`}>
-          {/* Top utility bar */}
-          <div className={`flex items-center justify-between px-5 py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100/50'}`}>
-            <div className="flex items-center gap-3">
+      {/* Main Content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: darkMode ? '#111827' : '#f0f4f8' }}>
+        {/* Top Bar */}
+        <header style={{
+          background: darkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: darkMode ? '1px solid #374151' : '1px solid rgba(229, 231, 235, 0.5)',
+          zIndex: 20
+        }}>
+          {/* Utility Bar */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '8px 20px',
+            borderBottom: darkMode ? '1px solid #374151' : '1px solid rgba(243, 244, 246, 0.5)'
+          }}>
+            {/* Left: Menu Toggle + Breadcrumb */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center transition-all active:scale-95`}
+                style={{
+                  width: '36px', height: '36px', borderRadius: '12px', border: 'none',
+                  background: darkMode ? '#374151' : '#f3f4f6',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = darkMode ? '#4b5563' : '#e5e7eb'}
+                onMouseLeave={(e) => e.currentTarget.style.background = darkMode ? '#374151' : '#f3f4f6'}
               >
-                <Menu size={18} className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
+                <Menu size={18} color={darkMode ? '#d1d5db' : '#4b5563'} />
               </button>
               
-              <div className="hidden md:flex items-center gap-1.5 text-xs">
-                <span className={darkMode ? 'text-gray-400' : 'text-gray-400'}>سیستم حسابداری سرمد</span>
-                <ChevronLeft size={12} className="text-gray-300" />
-                <span className={`font-bold ${currentItem?.color || 'text-blue-600'}`}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+                <span style={{ color: '#9ca3af' }}>سیستم حسابداری سرمد</span>
+                <ChevronLeft size={12} color="#d1d5db" />
+                <span style={{ fontWeight: 700, color: currentItem?.color?.includes('blue') ? '#2563eb' : '#3b82f6' }}>
                   {currentItem?.label}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Right: Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {/* Search */}
-              <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200/50'} border w-56`}>
-                <Search size={14} className={darkMode ? 'text-gray-400' : 'text-gray-400'} />
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '6px 12px', borderRadius: '12px',
+                background: darkMode ? '#374151' : '#f9fafb',
+                border: darkMode ? '1px solid #4b5563' : '1px solid rgba(229, 231, 235, 0.5)',
+                width: '200px'
+              }}>
+                <Search size={14} color="#9ca3af" />
                 <input 
                   type="text" 
                   placeholder="جست‌وجو..." 
-                  className={`bg-transparent text-xs ${darkMode ? 'text-gray-200 placeholder:text-gray-500' : 'text-gray-600 placeholder:text-gray-400'} outline-none w-full`}
+                  style={{
+                    background: 'transparent', border: 'none', outline: 'none',
+                    fontSize: '12px', color: darkMode ? '#e5e7eb' : '#4b5563',
+                    width: '100%'
+                  }}
                 />
               </div>
 
               {/* Date */}
-              <div className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${darkMode ? 'bg-indigo-900/30 border-indigo-700/50' : 'bg-indigo-50 border-indigo-100/50'} border`}>
-                <Calendar size={12} className="text-indigo-400" />
-                <span className={`text-[11px] ${darkMode ? 'text-indigo-300' : 'text-indigo-700'} font-bold`}>۱۴۰۴/۰۴/۱۵</span>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '6px 12px', borderRadius: '12px',
+                background: darkMode ? 'rgba(67, 56, 202, 0.2)' : '#eef2ff',
+                border: darkMode ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(199, 210, 254, 0.5)'
+              }}>
+                <Calendar size={12} color="#6366f1" />
+                <span style={{ fontSize: '11px', color: '#4338ca', fontWeight: 700 }}>۱۴۰۴/۰۴/۱۵</span>
               </div>
 
               {/* Notifications */}
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-amber-900/30 border-amber-700/50' : 'bg-amber-50 border-amber-100/50'} flex items-center justify-center transition-all relative border`}
+                  style={{
+                    width: '36px', height: '36px', borderRadius: '12px', border: 'none',
+                    background: darkMode ? 'rgba(180, 83, 9, 0.2)' : '#fffbeb',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    position: 'relative',
+                    borderStyle: 'solid', borderWidth: '1px',
+                    borderColor: darkMode ? 'rgba(180, 83, 9, 0.3)' : 'rgba(254, 243, 199, 0.5)'
+                  }}
                 >
-                  <Bell size={16} className="text-amber-500" />
+                  <Bell size={16} color="#d97706" />
                   {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold shadow-sm animate-pulse">
-                      {notifications.length}
-                    </span>
+                    <span style={{
+                      position: 'absolute', top: '-4px', right: '-4px',
+                      width: '16px', height: '16px', borderRadius: '50%',
+                      background: '#ef4444', color: 'white', fontSize: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, boxShadow: '0 2px 4px rgba(239, 68, 68, 0.4)'
+                    }}>{notifications.length}</span>
                   )}
                 </button>
                 {showNotifications && (
-                  <div className={`absolute left-0 top-12 w-72 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-2xl border p-4 animate-scale-in z-50`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>اعلان‌ها</h3>
-                      <button onClick={() => setShowNotifications(false)}><X size={14} className={darkMode ? 'text-gray-400' : 'text-gray-400'} /></button>
+                  <div style={{
+                    position: 'absolute', left: 0, top: '48px', width: '280px',
+                    background: darkMode ? '#1f2937' : 'white',
+                    borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    border: darkMode ? '1px solid #374151' : '1px solid #f3f4f6',
+                    padding: '16px', zIndex: 100, animation: 'scaleIn 0.2s ease-out'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <h3 style={{ fontSize: '12px', fontWeight: 700, color: darkMode ? 'white' : '#1f2937', margin: 0 }}>اعلان‌ها</h3>
+                      <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <X size={14} color="#9ca3af" />
+                      </button>
                     </div>
                     {notifications.length === 0 ? (
-                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} text-center py-4`}>اعلانی وجود ندارد</p>
+                      <p style={{ fontSize: '12px', color: '#9ca3af', textAlign: 'center', padding: '16px 0' }}>اعلانی وجود ندارد</p>
                     ) : (
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                         {notifications.map(notif => (
-                          <div key={notif.id} className={`flex items-start gap-2 p-2 rounded-xl ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} border ${darkMode ? 'border-gray-600' : 'border-gray-100'}`}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                              notif.type === 'success' ? 'bg-green-500' :
-                              notif.type === 'error' ? 'bg-red-500' :
-                              notif.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
-                            }`}>
-                              <Bell size={10} className="text-white" />
+                          <div key={notif.id} style={{
+                            display: 'flex', alignItems: 'flex-start', gap: '8px',
+                            padding: '8px', borderRadius: '12px', marginBottom: '8px',
+                            background: darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb',
+                            border: darkMode ? '1px solid #374151' : '1px solid #f3f4f6'
+                          }}>
+                            <div style={{
+                              width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
+                              background: notif.type === 'success' ? '#22c55e' : notif.type === 'error' ? '#ef4444' : notif.type === 'warning' ? '#f59e0b' : '#3b82f6',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                              <Bell size={10} color="white" />
                             </div>
-                            <div className="flex-1">
-                              <p className={`text-[11px] ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{notif.message}</p>
-                              <p className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{notif.time}</p>
+                            <div style={{ flex: 1 }}>
+                              <p style={{ fontSize: '11px', color: darkMode ? '#e5e7eb' : '#374151', margin: 0 }}>{notif.message}</p>
+                              <p style={{ fontSize: '9px', color: '#9ca3af', margin: 0 }}>{notif.time}</p>
                             </div>
-                            <button onClick={() => onDismissNotification(notif.id)} className="text-gray-400 hover:text-red-400">
-                              <X size={12} />
+                            <button onClick={() => onDismissNotification(notif.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                              <X size={12} color="#9ca3af" />
                             </button>
                           </div>
                         ))}
@@ -483,43 +576,100 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
                 )}
               </div>
 
-              {/* Dark Mode Toggle */}
+              {/* Dark Mode */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-purple-900/30 border-purple-700/50' : 'bg-purple-50 border-purple-100/50'} flex items-center justify-center transition-all border`}
+                style={{
+                  width: '36px', height: '36px', borderRadius: '12px', border: 'none',
+                  background: darkMode ? 'rgba(147, 51, 234, 0.2)' : '#faf5ff',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderStyle: 'solid', borderWidth: '1px',
+                  borderColor: darkMode ? 'rgba(147, 51, 234, 0.3)' : 'rgba(243, 232, 255, 0.5)'
+                }}
               >
-                {darkMode ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-purple-600" />}
+                {darkMode ? <Sun size={16} color="#fbbf24" /> : <Moon size={16} color="#9333ea" />}
               </button>
 
               {/* Refresh */}
-              <button className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-green-900/30 border-green-700/50' : 'bg-green-50 border-green-100/50'} flex items-center justify-center transition-all border`}>
-                <RefreshCw size={16} className="text-green-500" />
+              <button
+                style={{
+                  width: '36px', height: '36px', borderRadius: '12px', border: 'none',
+                  background: darkMode ? 'rgba(34, 197, 94, 0.2)' : '#f0fdf4',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderStyle: 'solid', borderWidth: '1px',
+                  borderColor: darkMode ? 'rgba(34, 197, 94, 0.3)' : 'rgba(220, 252, 231, 0.5)'
+                }}
+              >
+                <RefreshCw size={16} color="#22c55e" />
               </button>
 
               {/* User */}
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-xl ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-all`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '4px 8px', borderRadius: '12px', border: 'none',
+                    background: 'transparent', cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = darkMode ? '#374151' : '#f9fafb'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center shadow-sm">
-                    <User size={14} className="text-white" />
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #fb7185, #db2777)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 4px rgba(219, 39, 119, 0.2)'
+                  }}>
+                    <User size={14} color="white" />
                   </div>
-                  <div className="hidden xl:block text-right">
-                    <p className={`text-[11px] font-bold ${darkMode ? 'text-white' : 'text-gray-700'}`}>{user.fullName}</p>
-                    <p className={`text-[9px] ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>{user.role === 'admin' ? 'مدیر سیستم' : user.role}</p>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, color: darkMode ? 'white' : '#374151', margin: 0 }}>{user.fullName}</p>
+                    <p style={{ fontSize: '9px', color: '#9ca3af', margin: 0 }}>{user.role === 'admin' ? 'مدیر سیستم' : user.role}</p>
                   </div>
                 </button>
                 {showUserMenu && (
-                  <div className={`absolute left-0 top-12 w-48 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-xl shadow-2xl border p-1.5 animate-scale-in z-50`}>
-                    <button className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}>
+                  <div style={{
+                    position: 'absolute', left: 0, top: '48px', width: '180px',
+                    background: darkMode ? '#1f2937' : 'white',
+                    borderRadius: '12px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    border: darkMode ? '1px solid #374151' : '1px solid #f3f4f6',
+                    padding: '6px', zIndex: 100, animation: 'scaleIn 0.2s ease-out'
+                  }}>
+                    <button style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 12px', borderRadius: '8px', border: 'none',
+                      background: 'transparent', cursor: 'pointer', fontSize: '12px',
+                      color: darkMode ? '#d1d5db' : '#4b5563', textAlign: 'right'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = darkMode ? '#374151' : '#f9fafb'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
                       <User size={14} /> پروفایل
                     </button>
-                    <button className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}>
+                    <button style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 12px', borderRadius: '8px', border: 'none',
+                      background: 'transparent', cursor: 'pointer', fontSize: '12px',
+                      color: darkMode ? '#d1d5db' : '#4b5563', textAlign: 'right'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = darkMode ? '#374151' : '#f9fafb'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
                       <Settings size={14} /> تنظیمات
                     </button>
-                    <div className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'} my-1`}></div>
-                    <button onClick={onLogout} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-red-500 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'} transition-colors`}>
+                    <div style={{ borderTop: darkMode ? '1px solid #374151' : '1px solid #f3f4f6', margin: '4px 0' }}></div>
+                    <button 
+                      onClick={onLogout}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                        padding: '8px 12px', borderRadius: '8px', border: 'none',
+                        background: 'transparent', cursor: 'pointer', fontSize: '12px',
+                        color: '#ef4444', textAlign: 'right'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
                       <LogOut size={14} /> خروج
                     </button>
                   </div>
@@ -529,41 +679,85 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
           </div>
 
           {/* Circular Dock Menu */}
-          <div className="flex items-center justify-center py-3 px-4 overflow-x-auto">
-            <div className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-2xl ${darkMode ? 'bg-gray-700/80 border-gray-600/50' : 'glass-effect border-white/50'} dock-shadow border flex-shrink-0`}>
+          <div style={{
+            display: 'flex', justifyContent: 'center', padding: '12px 16px',
+            overflowX: 'auto'
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 12px', borderRadius: '20px',
+              background: darkMode ? 'rgba(55, 65, 81, 0.8)' : 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(20px)',
+              border: darkMode ? '1px solid rgba(75, 85, 99, 0.5)' : '1px solid rgba(255, 255, 255, 0.5)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+              flexShrink: 0
+            }}>
               {menuItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setCurrentPage(item.id);
-                    setExpandedMenu(item.id);
-                  }}
-                  className={`circle-icon group relative flex flex-col items-center cursor-pointer ${currentPage === item.id ? 'active' : ''}`}
+                  onClick={() => handleMenuClick(item.id)}
                   title={item.label}
-                  type="button"
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    padding: '4px', position: 'relative',
+                    transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    transform: currentPage === item.id ? 'translateY(-8px) scale(1.15)' : 'translateY(0)',
+                    zIndex: currentPage === item.id ? 10 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentPage !== item.id) {
+                      e.currentTarget.style.transform = 'translateY(-6px) scale(1.1)';
+                      e.currentTarget.style.zIndex = '10';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentPage !== item.id) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.zIndex = '1';
+                    }
+                  }}
                 >
-                  <div 
-                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 ${
-                      currentPage === item.id 
-                        ? `shadow-xl ${item.shadowColor} scale-110` 
-                        : 'shadow-md hover:shadow-lg opacity-80 hover:opacity-100'
-                    }`}
-                    style={{ 
-                      background: `linear-gradient(135deg, ${item.gradientFrom}, ${item.gradientTo})`,
-                    }}
-                  >
+                  <div style={{
+                    width: '44px', height: '44px', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: `linear-gradient(135deg, ${item.gradientFrom}, ${item.gradientTo})`,
+                    color: 'white',
+                    boxShadow: currentPage === item.id 
+                      ? `0 10px 25px ${item.gradientFrom}66`
+                      : '0 4px 12px rgba(0,0,0,0.15)',
+                    transition: 'all 0.3s',
+                    opacity: currentPage === item.id ? 1 : 0.85
+                  }}>
                     {item.icon}
                   </div>
-                  {/* Tooltip - pointer-events-none so it doesn't block clicks */}
-                  <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                    <span className={`text-[9px] font-bold ${darkMode ? 'text-gray-200 bg-gray-700 border-gray-600' : 'text-gray-600 bg-white border-gray-100'} px-2 py-0.5 rounded-md shadow-sm border`}>
+                  {/* Tooltip */}
+                  <div style={{
+                    position: 'absolute', bottom: '-24px', left: '50%',
+                    transform: 'translateX(-50%)', opacity: 0,
+                    transition: 'opacity 0.2s', pointerEvents: 'none',
+                    whiteSpace: 'nowrap'
+                  }}
+                  className="dock-tooltip"
+                  >
+                    <span style={{
+                      fontSize: '9px', fontWeight: 700,
+                      color: darkMode ? '#e5e7eb' : '#4b5563',
+                      background: darkMode ? '#374151' : 'white',
+                      border: darkMode ? '1px solid #4b5563' : '1px solid #f3f4f6',
+                      padding: '2px 8px', borderRadius: '6px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}>
                       {item.label}
                     </span>
                   </div>
+                  {/* Active dot */}
                   {currentPage === item.id && (
-                    <div className="absolute -bottom-1.5 w-1.5 h-1.5 rounded-full pointer-events-none" style={{ backgroundColor: item.gradientFrom }}></div>
+                    <div style={{
+                      position: 'absolute', bottom: '-4px',
+                      width: '6px', height: '6px', borderRadius: '50%',
+                      background: item.gradientFrom
+                    }}></div>
                   )}
                 </button>
               ))}
@@ -572,8 +766,8 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
         </header>
 
         {/* Page Content */}
-        <main className={`flex-1 overflow-y-auto p-4 md:p-6 ${darkMode ? 'bg-gray-900' : ''}`}>
-          <div className="animate-fade-in">
+        <main style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+          <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             {children}
           </div>
         </main>
