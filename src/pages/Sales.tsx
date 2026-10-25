@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { TrendingUp, Plus, Search, Filter, Eye, Edit, Printer, FileText, Receipt, TrendingDown, DollarSign, BarChart3, PieChart, Banknote } from 'lucide-react';
+import NewInvoiceForm from '../components/NewInvoiceForm';
 
 const salesInvoices = [
   { id: 1, number: 'فروش-۲۰۰۱', date: '۱۴۰۴/۰۴/۱۴', customer: 'شرکت آلفا تکنولوژی', amount: '۱۲,۵۰۰,۰۰۰', profit: '۳,۲۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار مرکزی', payment: '۸۰٪' },
@@ -16,6 +18,8 @@ const quickActions = [
 ];
 
 export default function Sales() {
+  const [showNewInvoice, setShowNewInvoice] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -24,11 +28,22 @@ export default function Sales() {
           <h1 className="text-2xl font-black text-gray-800">فروش</h1>
           <p className="text-sm text-gray-500 mt-1">مدیریت فاکتورها، سفارشات و گزارش‌های فروش</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-rose-500/30 transition-all">
+        <button 
+          onClick={() => setShowNewInvoice(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-rose-500/30 transition-all">
           <Plus size={16} />
           فاکتور فروش جدید
         </button>
       </div>
+
+      {/* New Invoice Modal */}
+      {showNewInvoice && (
+        <NewInvoiceForm 
+          type="sales" 
+          onClose={() => setShowNewInvoice(false)} 
+          onSuccess={() => setShowNewInvoice(false)} 
+        />
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

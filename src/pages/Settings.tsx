@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Settings as SettingsIcon, Users, Palette, Globe, Printer, Upload, HardDrive, History, Info, Shield, Save, ChevronLeft, User, Lock, Bell, Database, Download, RefreshCw } from 'lucide-react';
+import { backupDatabase, execQuery } from '../database/db';
 
 const settingsSections = [
   { title: 'کاربران و مجوزها', desc: 'مدیریت کاربران، نقش‌ها و دسترسی‌ها', icon: <Users size={20} />, color: 'from-blue-400 to-blue-600', count: '۵ کاربر' },
@@ -26,6 +28,41 @@ const backupHistory = [
 ];
 
 export default function Settings() {
+  const [backupStatus, setBackupStatus] = useState('');
+
+  const handleBackup = () => {
+    try {
+      const data = backupDatabase();
+      const blob = new Blob([data], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sarmad_backup_${new Date().toISOString().split('T')[0]}.sqlite`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setBackupStatus('پشتیبان‌گیری با موفقیت انجام شد');
+      setTimeout(() => setBackupStatus(''), 3000);
+    } catch (e) {
+      setBackupStatus('خطا در پشتیبان‌گیری');
+      setTimeout(() => setBackupStatus(''), 3000);
+    }
+  };
+
+  const getDbSize = () => {
+    try {
+      const data = localStorage.getItem('sarmad_sqlite_db');
+      if (data) {
+        const size = (data.length * 2) / 1024 / 1024; // rough estimate in MB
+        return `${size.toFixed(2)} مگابایت`;
+      }
+      return 'نامشخص';
+    } catch {
+      return 'نامشخص';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -126,14 +163,16 @@ export default function Settings() {
             <p className="text-[10px] text-gray-400 mt-0.5">تاریخچه پشتیبان‌ها</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-green-50 border border-green-200/50 text-xs text-green-600 hover:bg-green-100 transition-colors">
+            <button 
+              onClick={handleBackup}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-green-50 border border-green-200/50 text-xs text-green-600 hover:bg-green-100 transition-colors">
               <Download size={14} />
-              پشتیبان‌گیری
+              پشتیبان‌گیری SQLite
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200/50 text-xs text-amber-600 hover:bg-amber-100 transition-colors">
-              <RefreshCw size={14} />
-              بازیابی
-            </button>
+            <div className="text-[10px] text-gray-400">حجم DB: {getDbSize()}</div>
+            {backupStatus && (
+              <span className="text-[10px] text-green-600 bg-green-50 px-2 py-1 rounded-full">{backupStatus}</span>
+            )}
           </div>
         </div>
         

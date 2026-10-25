@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { ShoppingCart, Plus, Search, Filter, Eye, Edit, Printer, FileText, Receipt, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
+import NewInvoiceForm from '../components/NewInvoiceForm';
 
 const purchaseInvoices = [
   { id: 1, number: 'خرید-۱۰۰۱', date: '۱۴۰۴/۰۴/۱۲', supplier: 'تأمین‌کننده بتا', amount: '۸,۲۰۰,۰۰۰', status: 'قطعی', warehouse: 'انبار مرکزی', payment: '۶۰٪' },
@@ -16,6 +18,8 @@ const quickActions = [
 ];
 
 export default function Purchases() {
+  const [showNewInvoice, setShowNewInvoice] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -24,11 +28,22 @@ export default function Purchases() {
           <h1 className="text-2xl font-black text-gray-800">خرید</h1>
           <p className="text-sm text-gray-500 mt-1">مدیریت فاکتورها، سفارشات و گزارش‌های خرید</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-amber-500/30 transition-all">
+        <button 
+          onClick={() => setShowNewInvoice(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-amber-500/30 transition-all">
           <Plus size={16} />
           فاکتور خرید جدید
         </button>
       </div>
+
+      {/* New Invoice Modal */}
+      {showNewInvoice && (
+        <NewInvoiceForm 
+          type="purchase" 
+          onClose={() => setShowNewInvoice(false)} 
+          onSuccess={() => setShowNewInvoice(false)} 
+        />
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

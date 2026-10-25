@@ -197,3 +197,67 @@ body {
 .dock-shadow {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
+
+/* Dark mode styles */
+.dark body {
+  background-color: #111827;
+}
+
+.dark .card-hover {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dark table {
+  background-color: #1f2937;
+}
+
+.dark table thead tr {
+  background-color: #111827;
+}
+
+.dark table tbody tr {
+  border-color: #374151;
+}
+
+.dark table tbody tr:hover {
+  background-color: #374151;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280;
+}
+
+/* Print styles */
+@media print {
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  .print\\:block {
+    display: block !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  * {
+    color: black !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+}

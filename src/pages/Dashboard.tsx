@@ -1,11 +1,13 @@
+import { useEffect, useState } from 'react';
 import {
   TrendingUp, TrendingDown, DollarSign, ShoppingCart,
   Package, Users, AlertTriangle, CreditCard,
   Calendar, ArrowUpRight, ArrowDownRight, Zap,
   Wallet, Receipt, Clock, CheckCircle2, XCircle,
-  ArrowLeft, Eye
+  ArrowLeft, Eye, Database
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { execQuery } from '../database/db';
 
 const salesData = [
   { name: 'فروردین', sales: 45000, purchases: 32000 },
@@ -52,6 +54,36 @@ const upcomingChecks = [
 ];
 
 export default function Dashboard() {
+  const [dbStats, setDbStats] = useState({
+    totalSales: 0,
+    totalPurchases: 0,
+    totalContacts: 0,
+    totalItems: 0,
+    lowStockCount: 0,
+    pendingChecks: 0
+  });
+
+  useEffect(() => {
+    try {
+      const sales = execQuery(`SELECT COALESCE(SUM(total), 0) as total FROM sales_documents WHERE status = 'confirmed'`);
+      const purchases = execQuery(`SELECT COALESCE(SUM(total), 0) as total FROM purchase_documents WHERE status = 'confirmed'`);
+      const contacts = execQuery(`SELECT COUNT(*) as count FROM contacts WHERE status = 'active'`);
+      const items = execQuery(`SELECT COUNT(*) as count FROM items WHERE is_active = 1`);
+      const checks = execQuery(`SELECT COUNT(*) as count FROM checks WHERE status = 'pending'`);
+      
+      setDbStats({
+        totalSales: Number(sales[0]?.total || 0),
+        totalPurchases: Number(purchases[0]?.total || 0),
+        totalContacts: Number(contacts[0]?.count || 0),
+        totalItems: Number(items[0]?.count || 0),
+        lowStockCount: 3, // Will calculate from inventory
+        pendingChecks: Number(checks[0]?.count || 0)
+      });
+    } catch (e) {
+      console.error('Error loading dashboard stats:', e);
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Page Title */}
@@ -61,6 +93,10 @@ export default function Dashboard() {
           <p className="text-sm text-gray-500 mt-1">نمای کلی از وضعیت سیستم حسابداری</p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl border border-green-200/50">
+            <Database size={14} className="text-green-600" />
+            <span className="text-[10px] text-green-700 font-bold">SQLite فعال</span>
+          </div>
           <div className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-2xl shadow-sm border border-gray-100">
             <Calendar size={16} className="text-indigo-500" />
             <span className="text-sm text-gray-600 font-medium">سال مالی ۱۴۰۴</span>

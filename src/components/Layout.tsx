@@ -9,7 +9,7 @@ import {
   ArrowRightLeft, ClipboardList, DollarSign, Banknote,
   PieChart, FileSpreadsheet, Scale, PenTool, Lock, Palette,
   Globe, Printer, Upload, HardDrive, History, Info, Zap,
-  Shield, RefreshCw, Wifi, X, Home
+  Shield, RefreshCw, Wifi, X
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -18,6 +18,12 @@ interface LayoutProps {
   setCurrentPage: (page: PageType) => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
+  darkMode: boolean;
+  setDarkMode: (mode: boolean) => void;
+  user: { id: number; username: string; fullName: string; role: string };
+  onLogout: () => void;
+  notifications: Array<{id: number; message: string; type: string; time: string}>;
+  onDismissNotification: (id: number) => void;
 }
 
 interface SubMenuItem {
@@ -48,7 +54,7 @@ const menuItems: MenuItem[] = [
     gradientTo: '#1d4ed8',
     shadowColor: 'shadow-blue-500/40',
     subItems: [
-      { label: 'نمای کلی', icon: <Home size={15} /> },
+      { label: 'نمای کلی', icon: <LayoutDashboard size={15} /> },
       { label: 'وضعیت مالی', icon: <DollarSign size={15} /> },
       { label: 'خلاصه فروش و خرید', icon: <BarChart3 size={15} /> },
       { label: 'موجودی و هشدارها', icon: <Package size={15} /> },
@@ -233,12 +239,10 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export default function Layout({ children, currentPage, setCurrentPage, sidebarOpen, setSidebarOpen }: LayoutProps) {
+export default function Layout({ children, currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, darkMode, setDarkMode, user, onLogout, notifications, onDismissNotification }: LayoutProps) {
   const [expandedMenu, setExpandedMenu] = useState<PageType | null>(currentPage);
-  const [darkMode, setDarkMode] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showTopMenu, setShowTopMenu] = useState(true);
 
   const toggleMenu = (id: PageType) => {
     if (expandedMenu === id) {
@@ -252,27 +256,38 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
   const currentItem = menuItems.find(m => m.id === currentPage);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f0f4f8]">
-      {/* Slim Sidebar - Different Design */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-l border-gray-100 flex flex-col overflow-hidden shadow-sm z-20 relative`}>
+    <div className={`flex h-screen overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-[#f0f4f8]'}`}>
+      {/* Slim Sidebar */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} border-l flex flex-col overflow-hidden shadow-sm z-20 relative`}>
         {/* Sidebar Logo */}
-        <div className="h-16 flex items-center justify-center border-b border-gray-100 px-4">
+        <div className={`h-16 flex items-center justify-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'} px-4`}>
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
               <BookOpen size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="text-base font-black text-gray-800">سَرمد</h1>
-              <p className="text-[9px] text-gray-400 font-medium -mt-0.5">حسابداری هوشمند</p>
+              <h1 className={`text-base font-black ${darkMode ? 'text-white' : 'text-gray-800'}`}>سَرمد</h1>
+              <p className={`text-[9px] ${darkMode ? 'text-gray-400' : 'text-gray-400'} font-medium -mt-0.5`}>حسابداری هوشمند</p>
             </div>
+          </div>
+        </div>
+
+        {/* SQLite Badge */}
+        <div className={`mx-3 mt-2 p-2 rounded-xl ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-blue-50 border-blue-100'} border flex items-center justify-between`}>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+            <span className={`text-[10px] ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>SQLite فعال</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Shield size={11} className="text-green-500" />
+            <Wifi size={11} className="text-blue-400" />
           </div>
         </div>
 
         {/* Sidebar Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-2.5">
-          {/* Section Title */}
           <div className="px-3 mb-2">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">منوی اصلی</span>
+            <span className={`text-[10px] font-bold ${darkMode ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>منوی اصلی</span>
           </div>
           
           {menuItems.map((item) => (
@@ -281,21 +296,20 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
                 onClick={() => toggleMenu(item.id)}
                 className={`sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 group relative
                   ${expandedMenu === item.id
-                    ? 'bg-gray-50 shadow-sm'
-                    : 'hover:bg-gray-50/80'
+                    ? darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                    : darkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-50/80'
                   }
                 `}
               >
-                {/* Active dot */}
                 {currentPage === item.id && (
-                  <div className={`absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-full`} style={{ background: `linear-gradient(to bottom, ${item.gradientFrom}, ${item.gradientTo})` }}></div>
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-full" style={{ background: `linear-gradient(to bottom, ${item.gradientFrom}, ${item.gradientTo})` }}></div>
                 )}
                 
                 <div 
                   className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     expandedMenu === item.id 
                       ? 'text-white shadow-md' 
-                      : 'text-gray-400 group-hover:text-gray-600 bg-gray-100 group-hover:bg-gray-200'
+                      : darkMode ? 'text-gray-400 group-hover:text-gray-200 bg-gray-700 group-hover:bg-gray-600' : 'text-gray-400 group-hover:text-gray-600 bg-gray-100 group-hover:bg-gray-200'
                   }`}
                   style={expandedMenu === item.id ? { background: `linear-gradient(135deg, ${item.gradientFrom}, ${item.gradientTo})` } : {}}
                 >
@@ -303,23 +317,24 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
                 </div>
                 
                 <span className={`flex-1 text-right text-xs font-semibold transition-colors ${
-                  expandedMenu === item.id ? 'text-gray-800' : 'text-gray-500 group-hover:text-gray-700'
+                  expandedMenu === item.id 
+                    ? darkMode ? 'text-white' : 'text-gray-800' 
+                    : darkMode ? 'text-gray-400 group-hover:text-gray-200' : 'text-gray-500 group-hover:text-gray-700'
                 }`}>
                   {item.label}
                 </span>
                 
                 {expandedMenu === item.id && (
-                  <ChevronDown size={12} className="text-gray-400 rotate-180 transition-transform" />
+                  <ChevronDown size={12} className={`${darkMode ? 'text-gray-400' : 'text-gray-400'} rotate-180 transition-transform`} />
                 )}
               </button>
 
-              {/* Sub Menu */}
               {expandedMenu === item.id && (
-                <div className="mt-1 mr-4 border-r border-gray-100 pr-2.5 animate-fade-in">
+                <div className={`mt-1 mr-4 border-r ${darkMode ? 'border-gray-700' : 'border-gray-100'} pr-2.5 animate-fade-in`}>
                   {item.subItems.map((sub, idx) => (
                     <button
                       key={idx}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all text-[11px] group/sub"
+                      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg ${darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'} transition-all text-[11px] group/sub`}
                     >
                       <span className={`${item.color} opacity-50 group-hover/sub:opacity-100 transition-opacity`}>{sub.icon}</span>
                       <span className="group-hover/sub:translate-x-[-2px] transition-transform">{sub.label}</span>
@@ -332,19 +347,19 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-2.5 border-t border-gray-100">
-          <div className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-gray-50 border border-gray-100">
+        <div className={`p-2.5 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+          <div className={`flex items-center gap-2 px-2.5 py-2 rounded-xl ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-100'} border`}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-sm">
               <User size={14} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-gray-700 truncate">مدیر سیستم</p>
+              <p className={`text-[11px] font-bold ${darkMode ? 'text-white' : 'text-gray-700'} truncate`}>{user.fullName}</p>
               <p className="text-[9px] text-green-500 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse"></span>
-                آفلاین فعال
+                {user.role === 'admin' ? 'مدیر سیستم' : user.role}
               </p>
             </div>
-            <button className="text-gray-400 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-50">
+            <button onClick={onLogout} className={`${darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-gray-600' : 'text-gray-400 hover:text-red-400 hover:bg-red-50'} transition-colors p-1 rounded-lg`} title="خروج">
               <LogOut size={14} />
             </button>
           </div>
@@ -353,21 +368,20 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Circular Menu Bar - DOCK STYLE */}
-        <header className="glass-effect border-b border-gray-200/50 z-10 relative">
+        {/* Top Circular Menu Bar */}
+        <header className={`${darkMode ? 'bg-gray-800/90 border-gray-700' : 'glass-effect border-gray-200/50'} border-b z-10 relative`}>
           {/* Top utility bar */}
-          <div className="flex items-center justify-between px-5 py-2 border-b border-gray-100/50">
+          <div className={`flex items-center justify-between px-5 py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100/50'}`}>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all active:scale-95"
+                className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center transition-all active:scale-95`}
               >
-                <Menu size={18} className="text-gray-600" />
+                <Menu size={18} className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
               </button>
               
-              {/* Breadcrumb */}
               <div className="hidden md:flex items-center gap-1.5 text-xs">
-                <span className="text-gray-400">سیستم حسابداری سرمد</span>
+                <span className={darkMode ? 'text-gray-400' : 'text-gray-400'}>سیستم حسابداری سرمد</span>
                 <ChevronLeft size={12} className="text-gray-300" />
                 <span className={`font-bold ${currentItem?.color || 'text-blue-600'}`}>
                   {currentItem?.label}
@@ -377,97 +391,105 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
 
             <div className="flex items-center gap-2">
               {/* Search */}
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200/50 w-56">
-                <Search size={14} className="text-gray-400" />
+              <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200/50'} border w-56`}>
+                <Search size={14} className={darkMode ? 'text-gray-400' : 'text-gray-400'} />
                 <input 
                   type="text" 
                   placeholder="جست‌وجو..." 
-                  className="bg-transparent text-xs text-gray-600 outline-none w-full placeholder:text-gray-400"
+                  className={`bg-transparent text-xs ${darkMode ? 'text-gray-200 placeholder:text-gray-500' : 'text-gray-600 placeholder:text-gray-400'} outline-none w-full`}
                 />
               </div>
 
               {/* Date */}
-              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100/50">
-                <Calendar size={12} className="text-indigo-500" />
-                <span className="text-[11px] text-indigo-700 font-bold">۱۴۰۴/۰۴/۱۵</span>
+              <div className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${darkMode ? 'bg-indigo-900/30 border-indigo-700/50' : 'bg-indigo-50 border-indigo-100/50'} border`}>
+                <Calendar size={12} className="text-indigo-400" />
+                <span className={`text-[11px] ${darkMode ? 'text-indigo-300' : 'text-indigo-700'} font-bold`}>۱۴۰۴/۰۴/۱۵</span>
               </div>
 
               {/* Notifications */}
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="w-9 h-9 rounded-xl bg-amber-50 hover:bg-amber-100 flex items-center justify-center transition-all relative border border-amber-100/50"
+                  className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-amber-900/30 border-amber-700/50' : 'bg-amber-50 border-amber-100/50'} flex items-center justify-center transition-all relative border`}
                 >
-                  <Bell size={16} className="text-amber-600" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold shadow-sm">۳</span>
+                  <Bell size={16} className="text-amber-500" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold shadow-sm animate-pulse">
+                      {notifications.length}
+                    </span>
+                  )}
                 </button>
                 {showNotifications && (
-                  <div className="absolute left-0 top-12 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 animate-scale-in z-50">
+                  <div className={`absolute left-0 top-12 w-72 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-2xl border p-4 animate-scale-in z-50`}>
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xs font-bold text-gray-800">اعلان‌ها</h3>
-                      <button onClick={() => setShowNotifications(false)}><X size={14} className="text-gray-400" /></button>
+                      <h3 className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>اعلان‌ها</h3>
+                      <button onClick={() => setShowNotifications(false)}><X size={14} className={darkMode ? 'text-gray-400' : 'text-gray-400'} /></button>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2 p-2 rounded-xl bg-red-50/80 border border-red-100/50">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center flex-shrink-0">
-                          <CreditCard size={12} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="text-[11px] text-gray-700 font-medium">چک سررسید امروز</p>
-                          <p className="text-[9px] text-gray-400">۵,۰۰۰,۰۰۰ ریال - بانک ملت</p>
-                        </div>
+                    {notifications.length === 0 ? (
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} text-center py-4`}>اعلانی وجود ندارد</p>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {notifications.map(notif => (
+                          <div key={notif.id} className={`flex items-start gap-2 p-2 rounded-xl ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} border ${darkMode ? 'border-gray-600' : 'border-gray-100'}`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              notif.type === 'success' ? 'bg-green-500' :
+                              notif.type === 'error' ? 'bg-red-500' :
+                              notif.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                            }`}>
+                              <Bell size={10} className="text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className={`text-[11px] ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{notif.message}</p>
+                              <p className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{notif.time}</p>
+                            </div>
+                            <button onClick={() => onDismissNotification(notif.id)} className="text-gray-400 hover:text-red-400">
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                      <div className="flex items-start gap-2 p-2 rounded-xl bg-amber-50/80 border border-amber-100/50">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
-                          <Package size={12} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="text-[11px] text-gray-700 font-medium">کالای کم‌موجود</p>
-                          <p className="text-[9px] text-gray-400">۳ قلم زیر حداقل</p>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Dark Mode */}
+              {/* Dark Mode Toggle */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className="w-9 h-9 rounded-xl bg-purple-50 hover:bg-purple-100 flex items-center justify-center transition-all border border-purple-100/50"
+                className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-purple-900/30 border-purple-700/50' : 'bg-purple-50 border-purple-100/50'} flex items-center justify-center transition-all border`}
               >
-                {darkMode ? <Sun size={16} className="text-purple-600" /> : <Moon size={16} className="text-purple-600" />}
+                {darkMode ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-purple-600" />}
               </button>
 
               {/* Refresh */}
-              <button className="w-9 h-9 rounded-xl bg-green-50 hover:bg-green-100 flex items-center justify-center transition-all border border-green-100/50">
-                <RefreshCw size={16} className="text-green-600" />
+              <button className={`w-9 h-9 rounded-xl ${darkMode ? 'bg-green-900/30 border-green-700/50' : 'bg-green-50 border-green-100/50'} flex items-center justify-center transition-all border`}>
+                <RefreshCw size={16} className="text-green-500" />
               </button>
 
               {/* User */}
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-all"
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-xl ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-all`}
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center shadow-sm">
                     <User size={14} className="text-white" />
                   </div>
                   <div className="hidden xl:block text-right">
-                    <p className="text-[11px] font-bold text-gray-700">مدیر سیستم</p>
-                    <p className="text-[9px] text-gray-400">admin@sarmad.ir</p>
+                    <p className={`text-[11px] font-bold ${darkMode ? 'text-white' : 'text-gray-700'}`}>{user.fullName}</p>
+                    <p className={`text-[9px] ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>{user.role === 'admin' ? 'مدیر سیستم' : user.role}</p>
                   </div>
                 </button>
                 {showUserMenu && (
-                  <div className="absolute left-0 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 p-1.5 animate-scale-in z-50">
-                    <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 transition-colors">
+                  <div className={`absolute left-0 top-12 w-48 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-xl shadow-2xl border p-1.5 animate-scale-in z-50`}>
+                    <button className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}>
                       <User size={14} /> پروفایل
                     </button>
-                    <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 transition-colors">
+                    <button className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}>
                       <Settings size={14} /> تنظیمات
                     </button>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-red-500 hover:bg-red-50 transition-colors">
+                    <div className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'} my-1`}></div>
+                    <button onClick={onLogout} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-red-500 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'} transition-colors`}>
                       <LogOut size={14} /> خروج
                     </button>
                   </div>
@@ -478,7 +500,7 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
 
           {/* Circular Dock Menu */}
           <div className="flex items-center justify-center py-3 px-4">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-2xl glass-effect dock-shadow border border-white/50">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl ${darkMode ? 'bg-gray-700/80 border-gray-600/50' : 'glass-effect border-white/50'} dock-shadow border`}>
               {menuItems.map((item) => (
                 <button
                   key={item.id}
@@ -503,11 +525,10 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
                   </div>
                   {/* Tooltip */}
                   <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    <span className="text-[9px] font-bold text-gray-600 bg-white px-2 py-0.5 rounded-md shadow-sm border border-gray-100">
+                    <span className={`text-[9px] font-bold ${darkMode ? 'text-gray-200 bg-gray-700 border-gray-600' : 'text-gray-600 bg-white border-gray-100'} px-2 py-0.5 rounded-md shadow-sm border`}>
                       {item.label}
                     </span>
                   </div>
-                  {/* Active indicator dot */}
                   {currentPage === item.id && (
                     <div className="absolute -bottom-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.gradientFrom }}></div>
                   )}
@@ -518,7 +539,7 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className={`flex-1 overflow-y-auto p-4 md:p-6 ${darkMode ? 'bg-gray-900' : ''}`}>
           <div className="animate-fade-in">
             {children}
           </div>
