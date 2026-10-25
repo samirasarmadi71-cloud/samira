@@ -1,113 +1,107 @@
 @echo off
-chcp 65001 >nul
-title سیستم حسابداری سرمد - نصب و راه‌اندازی
+title Sarmad Accounting System - Installation
 color 0B
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     سیستم حسابداری، امور مالی و انبارداری سرمد            ║
-echo ║     نصب و راه‌اندازی اولیه                                 ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Sarmad Accounting System - Installation
+echo ================================================================
 echo.
 
 :: Check if Node.js is installed
 where node >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo [خطا] Node.js نصب نیست!
+    echo [ERROR] Node.js is not installed!
     echo.
-    echo لطفاً Node.js را از سایت رسمی دانلود و نصب کنید:
+    echo Please download and install Node.js from:
     echo https://nodejs.org/
     echo.
-    echo پس از نصب، این فایل را مجدداً اجرا کنید.
+    echo After installation, run this file again.
     echo.
     pause
     exit /b 1
 )
 
 :: Display Node.js version
-echo [اطلاعات] نسخه Node.js:
+echo [INFO] Node.js version:
 node --version
 echo.
 
 :: Check if npm is installed
 where npm >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo [خطا] npm نصب نیست!
+    echo [ERROR] npm is not installed!
     pause
     exit /b 1
 )
 
-echo [اطلاعات] نسخه npm:
+echo [INFO] npm version:
 call npm --version
 echo.
 
 :: Install dependencies
-echo ═══════════════════════════════════════════════════════════
-echo [مرحله ۱ از ۳] نصب وابستگی‌ها...
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
+echo [Step 1 of 3] Installing dependencies...
+echo ================================================================
 echo.
 call npm install
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo [خطا] نصب وابستگی‌ها با مشکل مواجه شد!
+    echo [ERROR] Failed to install dependencies!
     pause
     exit /b 1
 )
 echo.
-echo [موفق] وابستگی‌ها با موفقیت نصب شدند.
+echo [SUCCESS] Dependencies installed successfully.
 echo.
 
 :: Build the project
-echo ═══════════════════════════════════════════════════════════
-echo [مرحله ۲ از ۳] ساخت پروژه...
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
+echo [Step 2 of 3] Building project...
+echo ================================================================
 echo.
 call npm run build
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo [خطا] ساخت پروژه با مشکل مواجه شد!
+    echo [ERROR] Failed to build project!
     pause
     exit /b 1
 )
 echo.
-echo [موفق] پروژه با موفقیت ساخته شد.
+echo [SUCCESS] Project built successfully.
 echo.
 
-:: Install serve package globally for serving static files
-echo ═══════════════════════════════════════════════════════════
-echo [مرحله ۳ از ۳] نصب سرور محلی...
-echo ═══════════════════════════════════════════════════════════
+:: Install serve package globally
+echo ================================================================
+echo [Step 3 of 3] Installing local server...
+echo ================================================================
 echo.
 call npm install -g serve
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo [توجه] نصب سرور محلی با مشکل مواجه شد.
-    echo از سرور داخلی استفاده می‌شود.
+    echo [INFO] Failed to install serve globally.
+    echo Will use npx serve instead.
     echo.
 )
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     ✓ نصب با موفقیت انجام شد!                             ║
-echo ║                                                            ║
-echo ║     برای اجرای برنامه، فایل "start.bat" را اجرا کنید.    ║
-echo ║                                                            ║
-echo ║     اطلاعات ورود:                                         ║
-echo ║     نام کاربری: admin                                     ║
-echo ║     رمز عبور: admin123                                    ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Installation completed successfully!
 echo.
-echo آیا می‌خواهید برنامه را الان اجرا کنید؟ (Y/N)
+echo     To run the program, execute "start.bat"
+echo.
+echo     Login credentials:
+echo     Username: admin
+echo     Password: admin123
+echo ================================================================
+echo.
+echo Do you want to run the program now? (Y/N)
 set /p choice=
 if /i "%choice%"=="Y" (
     call start.bat
 ) else (
     echo.
-    echo برای اجرای برنامه در آینده، فایل "start.bat" را اجرا کنید.
+    echo To run the program later, execute "start.bat"
     echo.
 )
 

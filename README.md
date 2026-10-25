@@ -1,390 +1,245 @@
-# سیستم حسابداری، امور مالی و انبارداری سرمد
+# Sarmad Accounting System
 
-<div align="center">
+A complete offline accounting, financial management, and inventory system built with React, TypeScript, and SQLite.
 
-![نسخه](https://img.shields.io/badge/نسخه-1.0.0-blue)
-![وضعیت](https://img.shields.io/badge/وضعیت-پایدار-green)
-![پایگاه داده](https://img.shields.io/badge/پایگاه%20داده-SQLite-orange)
-![زبان](https://img.shields.io/badge/زبان-فارسی-red)
+## Features
 
-**سیستم حسابداری آفلاین، محلی و فارسی با قابلیت‌های کامل**
+- **Offline First**: Works completely offline with SQLite database
+- **Persian Language**: Full RTL support with Persian interface
+- **Multi-Module**: Dashboard, Contacts, Sales, Purchases, Inventory, Treasury, Reports, Accounting, Settings
+- **Real-time Search**: Search and filter across all pages
+- **Export/Import**: Excel export and CSV import support
+- **Print Support**: Print invoices and reports
+- **Dark Mode**: Toggle between light and dark themes
+- **User Authentication**: Secure login system with role-based access
+- **Backup & Restore**: Database backup and restore functionality
 
-</div>
+## Quick Start
 
----
+### Installation
 
-## 📋 فهرست مطالب
+1. Double-click `install.bat` to install dependencies
+2. Double-click `start.bat` to run the application
+3. Open your browser to `http://localhost:3000`
 
-- [معرفی](#-معرفی)
-- [ویژگی‌ها](#-ویژگی‌ها)
-- [نیازمندی‌ها](#-نیازمندی‌ها)
-- [نصب و راه‌اندازی](#-نصب-و-راه‌اندازی)
-- [اجرای برنامه](#-اجرای-برنامه)
-- [اطلاعات ورود](#-اطلاعات-ورود)
-- [ماژول‌های سیستم](#-ماژول‌های-سیستم)
-- [فناوری‌های استفاده شده](#-فناوری‌های-استفاده-شده)
-- [ساختار پروژه](#-ساختار-پروژه)
-- [پشتیبانی](#-پشتیبانی)
+### Login Credentials
 
----
+- **Username**: `admin`
+- **Password**: `admin123`
 
-## 🎯 معرفی
+## Available Scripts
 
-**سرمد** یک سیستم حسابداری کامل، آفلاین و محلی است که برای کسب‌وکارهای کوچک و متوسط طراحی شده است. این سیستم با استفاده از پایگاه داده SQLite کار می‌کند و نیازی به اتصال اینترنت ندارد.
+### `install.bat`
+Initial setup and dependency installation
 
-### ویژگی‌های کلیدی:
-- ✅ کاملاً آفلاین و محلی
-- ✅ پایگاه داده SQLite
-- ✅ رابط کاربری فارسی و راست‌چین
-- ✅ پشتیبانی از چند کاربر
-- ✅ گزارش‌گیری پیشرفته
-- ✅ چاپ فاکتور
-- ✅ ورود و خروج Excel
+### `start.bat`
+Run the application in production mode (port 3000)
 
----
+### `dev.bat`
+Run in development mode with hot reload (port 5173)
 
-## ✨ ویژگی‌ها
+### `build.bat`
+Build the production version
 
-### 💼 مدیریت مالی
-- ثبت فاکتورهای خرید و فروش
-- مدیریت چک‌های دریافتی و پرداختی
-- پیگیری مطالبات و بدهی‌ها
-- محاسبه خودکار سود و زیان
+### `quick-start.bat`
+Quick start using Vite preview (port 4173)
 
-### 📦 مدیریت انبار
-- مدیریت موجودی کالا
-- رسید و حواله انبار
-- انتقال بین انبارها
-- هشدار کم‌موجودی
+### `clean.bat`
+Clean up node_modules and dist folders
 
-### 👥 مدیریت اشخاص
-- ثبت اطلاعات مشتریان و تأمین‌کنندگان
-- پیگیری گردش حساب
-- مدیریت سقف اعتبار
+## Technology Stack
 
-### 📊 گزارش‌گیری
-- گزارش فروش و خرید
-- گزارش موجودی انبار
-- تراز آزمایشی
-- سود و زیان
-- ترازنامه
+- **Frontend**: React 18, TypeScript, Tailwind CSS
+- **Database**: SQLite (via sql.js)
+- **Build Tool**: Vite
+- **Charts**: Recharts
+- **Icons**: Lucide React
 
-### 🔐 امنیت
-- احراز هویت با نام کاربری و رمز عبور
-- مدیریت نقش‌ها و مجوزها
-- سوابق عملیات (Audit Log)
-- پشتیبان‌گیری و بازیابی
-
----
-
-## 📦 نیازمندی‌ها
-
-برای اجرای این برنامه به موارد زیر نیاز دارید:
-
-- **Node.js** نسخه 16 یا بالاتر
-- **npm** نسخه 8 یا بالاتر
-- مرورگر وب مدرن (Chrome, Firefox, Edge, Safari)
-
-### بررسی نصب Node.js
-
-برای بررسی نصب بودن Node.js، دستور زیر را در Command Prompt اجرا کنید:
-
-```bash
-node --version
-npm --version
-```
-
-اگر Node.js نصب نیست، از سایت رسمی دانلود کنید:
-🔗 [https://nodejs.org/](https://nodejs.org/)
-
----
-
-## 🚀 نصب و راه‌اندازی
-
-### روش اول: استفاده از فایل BAT (توصیه شده)
-
-1. **نصب اولیه:**
-   - روی فایل `install.bat` دابل‌کلیک کنید
-   - صبر کنید تا نصب کامل شود
-   - در پایان، برنامه به صورت خودکار اجرا می‌شود
-
-### روش دوم: نصب دستی
-
-1. **نصب وابستگی‌ها:**
-   ```bash
-   npm install
-   ```
-
-2. **ساخت پروژه:**
-   ```bash
-   npm run build
-   ```
-
-3. **نصب سرور محلی:**
-   ```bash
-   npm install -g serve
-   ```
-
----
-
-## ▶️ اجرای برنامه
-
-### روش اول: استفاده از فایل BAT (توصیه شده)
-
-- روی فایل `start.bat` دابل‌کلیک کنید
-- مرورگر به صورت خودکار باز می‌شود
-- برنامه در آدرس `http://localhost:3000` در دسترس است
-
-### روش دوم: اجرای دستی
-
-```bash
-# سرور محلی را اجرا کنید
-serve -s dist -l 3000
-
-# یا با npx
-npx serve -s dist -l 3000
-```
-
-### حالت توسعه (برای برنامه‌نویسان)
-
-برای اجرای برنامه در حالت توسعه با قابلیت Hot Module Replacement:
-
-```bash
-# یا با دابل‌کلیک روی dev.bat
-npm run dev
-```
-
-برنامه در آدرس `http://localhost:5173` در دسترس خواهد بود.
-
----
-
-## 🔑 اطلاعات ورود
-
-پس از اجرای برنامه، از اطلاعات زیر برای ورود استفاده کنید:
-
-| فیلد | مقدار |
-|------|-------|
-| **نام کاربری** | `admin` |
-| **رمز عبور** | `admin123` |
-
-⚠️ **توصیه امنیتی:** پس از اولین ورود، رمز عبور را تغییر دهید.
-
----
-
-## 📚 ماژول‌های سیستم
-
-### 1. 🏠 داشبورد
-- نمای کلی از وضعیت مالی
-- نمودارهای فروش و خرید
-- هشدارهای مهم
-- آخرین عملیات
-
-### 2. 🗄️ اطلاعات پایه
-- اطلاعات شرکت
-- سال مالی و دوره‌ها
-- گروه‌بندی کالاها
-- واحدهای اندازه‌گیری
-- انبارها
-- صندوق و بانک
-- کدینگ حساب‌ها
-- روش‌های پرداخت
-
-### 3. 👥 معرفی اشخاص
-- فهرست اشخاص (مشتریان و تأمین‌کنندگان)
-- ثبت شخص جدید
-- پرونده شخص
-- گردش حساب
-- مانده حساب
-
-### 4. 🛒 خرید
-- ثبت فاکتور خرید
-- فهرست فاکتورها
-- پیش‌فاکتور و سفارش خرید
-- برگشت از خرید
-- هزینه‌های خرید
-- گزارش خرید
-
-### 5. 📈 فروش
-- ثبت فاکتور فروش
-- فهرست فاکتورها
-- پیش‌فاکتور و سفارش فروش
-- برگشت از فروش
-- دریافت‌های مرتبط
-- گزارش فروش و سود
-
-### 6. 📦 انبار و کالا
-- فهرست کالا و خدمات
-- رسید ورود کالا
-- حواله خروج کالا
-- انتقال بین انبارها
-- انبارگردانی
-- کارتکس کالا
-- گزارش موجودی
-- کالاهای کم‌موجود
-
-### 7. 🏦 چک و خزانه‌داری
-- دریافت وجه
-- پرداخت وجه
-- مدیریت صندوق و بانک
-- انتقال وجه
-- چک‌های دریافتی
-- چک‌های پرداختی
-- سررسید چک‌ها
-- مغایرت بانکی
-
-### 8. 📊 گزارشات
-- گزارش فروش و خرید
-- گزارش موجودی و گردش کالا
-- گزارش حساب اشخاص
-- گزارش صندوق و بانک
-- دفتر روزنامه
-- دفتر کل و معین
-- تراز آزمایشی
-- صورت سود و زیان
-- ترازنامه
-
-### 9. 📖 اسناد حسابداری
-- ثبت سند دستی
-- فهرست اسناد
-- اسناد پیش‌نویس
-- اسناد تأییدشده و قطعی
-- اسناد اصلاحی و برگشتی
-- بستن دوره مالی
-
-### 10. ⚙️ تنظیمات
-- کاربران و مجوزها
-- تنظیمات ظاهر
-- تاریخ، ارقام و واحد پول
-- قالب چاپ
-- ورود و خروج Excel
-- پشتیبان‌گیری و بازیابی
-- سوابق عملیات
-- اطلاعات نسخه
-
-### 11. 🔢 کدینگ حساب‌ها
-- ساختار درختی حساب‌ها
-- حساب‌های کل، معین و تفصیلی
-- مدیریت حساب‌ها
-
----
-
-## 🛠️ فناوری‌های استفاده شده
-
-### Frontend
-- **React 18** - کتابخانه رابط کاربری
-- **TypeScript** - زبان برنامه‌نویسی
-- **Vite** - ابزار ساخت
-- **Tailwind CSS** - استایل‌دهی
-- **Recharts** - نمودارها
-- **Lucide React** - آیکون‌ها
-
-### Backend & Database
-- **SQLite (sql.js)** - پایگاه داده
-- **LocalStorage** - ذخیره‌سازی محلی
-
-### ابزارها
-- **npm** - مدیریت بسته‌ها
-- **serve** - سرور محلی
-
----
-
-## 📁 ساختار پروژه
+## Project Structure
 
 ```
 sarmad-accounting/
-├── public/                 # فایل‌های عمومی
 ├── src/
-│   ├── components/         # کامپوننت‌های React
-│   │   ├── Layout.tsx      # لایه اصلی برنامه
-│   │   ├── PageToolbar.tsx # نوار ابزار صفحات
-│   │   ├── NewInvoiceForm.tsx  # فرم ثبت فاکتور
-│   │   └── PrintInvoice.tsx    # چاپ فاکتور
-│   ├── pages/              # صفحات برنامه
-│   │   ├── Dashboard.tsx   # داشبورد
-│   │   ├── Contacts.tsx    # اشخاص
-│   │   ├── Sales.tsx       # فروش
-│   │   ├── Purchases.tsx   # خرید
-│   │   ├── Inventory.tsx   # انبار
-│   │   ├── Treasury.tsx    # خزانه‌داری
-│   │   ├── Reports.tsx     # گزارشات
-│   │   ├── Accounting.tsx  # اسناد حسابداری
-│   │   ├── Settings.tsx    # تنظیمات
-│   │   ├── ChartOfAccounts.tsx  # کدینگ حساب‌ها
-│   │   ├── BaseData.tsx    # اطلاعات پایه
-│   │   └── LoginPage.tsx   # صفحه ورود
-│   ├── database/           # پایگاه داده
-│   │   └── db.ts           # مدیریت SQLite
-│   ├── hooks/              # هوک‌های سفارشی
-│   │   └── useSearchFilter.ts
-│   ├── utils/              # توابع کمکی
-│   │   └── exportImport.ts # ورود و خروج Excel
-│   ├── App.tsx             # کامپوننت اصلی
-│   ├── main.tsx            # نقطه ورود
-│   └── index.css           # استایل‌های سراسری
-├── dist/                   # فایل‌های build شده
-├── install.bat             # نصب اولیه
-├── start.bat               # اجرای برنامه
-├── dev.bat                 # حالت توسعه
-├── build.bat               # ساخت پروژه
-├── package.json            # تنظیمات npm
-├── tsconfig.json           # تنظیمات TypeScript
-├── vite.config.ts          # تنظیمات Vite
-└── README.md               # این فایل
+│   ├── components/     # React components
+│   ├── pages/          # Page components
+│   ├── database/       # Database layer
+│   ├── hooks/          # Custom hooks
+│   ├── utils/          # Utility functions
+│   └── App.tsx         # Main app component
+├── public/             # Static assets
+├── dist/               # Production build
+├── install.bat         # Installation script
+├── start.bat           # Start script
+├── dev.bat             # Development script
+├── build.bat           # Build script
+└── README.md           # This file
 ```
 
+## Database
+
+The system uses SQLite via sql.js for complete SQL support. Data is stored in browser localStorage and can be backed up/restored.
+
+### Database Features
+- Full SQL support
+- Transaction support
+- Backup and restore
+- Export to CSV/Excel
+- Import from CSV
+
+## Modules
+
+### 1. Dashboard
+- Financial overview
+- Sales and purchase charts
+- Alerts and notifications
+- Recent activities
+
+### 2. Base Information
+- Company settings
+- Fiscal years
+- Item groups
+- Units
+- Warehouses
+- Cash and bank accounts
+- Chart of accounts
+- Payment methods
+
+### 3. Contacts
+- Customer and supplier management
+- Contact details
+- Credit limits
+- Account statements
+
+### 4. Purchases
+- Purchase invoices
+- Purchase orders
+- Purchase returns
+- Purchase reports
+
+### 5. Sales
+- Sales invoices
+- Sales orders
+- Sales returns
+- Profit analysis
+
+### 6. Inventory
+- Product management
+- Stock receipts
+- Stock issues
+- Stock transfers
+- Stocktaking
+- Low stock alerts
+
+### 7. Treasury
+- Cash management
+- Bank accounts
+- Check management
+- Fund transfers
+- Bank reconciliation
+
+### 8. Reports
+- Sales and purchase reports
+- Inventory reports
+- Contact reports
+- Cash and bank reports
+- General ledger
+- Trial balance
+- Profit & Loss
+- Balance sheet
+
+### 9. Accounting Documents
+- Manual journal entries
+- Auto-generated entries
+- Document approval workflow
+- Period closing
+
+### 10. Settings
+- User management
+- Appearance settings
+- Date and number formats
+- Print templates
+- Import/Export settings
+- Backup and restore
+- Audit logs
+
+### 11. Chart of Accounts
+- Hierarchical account structure
+- General, subsidiary, and detail accounts
+- Account management
+
+## Backup and Restore
+
+### Creating a Backup
+1. Go to Settings
+2. Click "Backup & Restore"
+3. Click "Backup SQLite" button
+4. Save the backup file
+
+### Restoring from Backup
+1. Go to Settings
+2. Click "Backup & Restore"
+3. Select the backup file
+4. Confirm restoration
+
+**Important**: Always backup your data regularly!
+
+## Security
+
+- Password hashing
+- Role-based access control
+- Audit logging
+- Session management
+- Input validation
+
+## Browser Support
+
+- Chrome/Edge (recommended)
+- Firefox
+- Safari
+- Opera
+
+## Development
+
+### Prerequisites
+- Node.js 16+
+- npm 8+
+
+### Setup
+```bash
+npm install
+npm run dev
+```
+
+### Build
+```bash
+npm run build
+```
+
+## Troubleshooting
+
+### Application won't start
+1. Run `clean.bat`
+2. Run `install.bat`
+3. Run `start.bat`
+
+### Database errors
+1. Check browser console for errors
+2. Try clearing browser localStorage
+3. Restore from backup
+
+### Port already in use
+1. Close other applications using port 3000
+2. Or modify the port in `start.bat`
+
+## License
+
+Proprietary software developed for Sarmad Accounting System.
+
+## Support
+
+For support and inquiries, please contact the development team.
+
 ---
 
-## 💾 پشتیبان‌گیری و بازیابی
-
-### پشتیبان‌گیری
-1. وارد بخش **تنظیمات** شوید
-2. روی **پشتیبان‌گیری و بازیابی** کلیک کنید
-3. دکمه **پشتیبان‌گیری SQLite** را بزنید
-4. فایل پشتیبان دانلود می‌شود
-
-### بازیابی
-1. فایل پشتیبان را در محل امن نگهداری کنید
-2. برای بازیابی، فایل را به بخش تنظیمات ببرید
-3. از گزینه بازیابی استفاده کنید
-
-⚠️ **توصیه:** به صورت دوره‌ای از داده‌ها پشتیبان بگیرید.
-
----
-
-## 🔒 امنیت
-
-### نکات امنیتی مهم:
-- رمز عبور را به صورت منظم تغییر دهید
-- از فایل پشتیبان در محل امن نگهداری کنید
-- دسترسی به فایل‌های برنامه را محدود کنید
-- سوابق عملیات را به صورت دوره‌ای بررسی کنید
-
----
-
-## 📞 پشتیبانی
-
-در صورت بروز مشکل یا نیاز به راهنمایی:
-
-1. **بررسی لاگ‌ها:** فایل‌های لاگ را در کنسول مرورگر بررسی کنید
-2. **پشتیبان‌گیری:** قبل از هر تغییر، پشتیبان بگیرید
-3. **مستندات:** فایل README را مطالعه کنید
-
----
-
-## 📝 مجوز
-
-این نرم‌افزار تحت مجوز اختصاصی توسعه داده شده است.
-
----
-
-## 🎉 تشکر
-
-از اینکه از **سیستم حسابداری سرمد** استفاده می‌کنید، سپاسگزاریم!
-
----
-
-<div align="center">
-
-**نسخه 1.0.0** | **توسعه یافته با ❤️ در ایران**
-
-</div>
+**Version**: 1.0.0  
+**Last Updated**: 2026

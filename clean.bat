@@ -1,67 +1,62 @@
 @echo off
-chcp 65001 >nul
-title سیستم حسابداری سرمد - پاک‌سازی
+title Sarmad Accounting System - Cleanup
 color 0C
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     سیستم حسابداری سرمد - پاک‌سازی کامل                   ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Sarmad Accounting System - Full Cleanup
+echo ================================================================
 echo.
-echo ⚠️  هشدار: این عملیات موارد زیر را پاک می‌کند:
+echo WARNING: This will delete:
 echo.
-echo     - پوشه node_modules
-echo     - پوشه dist
-echo     - فایل‌های موقت
+echo     - node_modules folder
+echo     - dist folder
+echo     - temporary files
 echo.
-echo ⚠️  داده‌های پایگاه داده (در LocalStorage) پاک نخواهند شد.
+echo Database data (in LocalStorage) will NOT be deleted.
 echo.
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
 echo.
 
-set /p confirm=آیا مطمئن هستید؟ (Y/N): 
+set /p confirm=Are you sure? (Y/N): 
 
 if /i not "%confirm%"=="Y" (
     echo.
-    echo عملیات لغو شد.
+    echo Operation cancelled.
     pause
     exit /b 0
 )
 
 echo.
-echo [مرحله ۱] در حال حذف node_modules...
+echo [Step 1] Deleting node_modules...
 if exist "node_modules" (
     rmdir /s /q node_modules
-    echo [موفق] node_modules حذف شد.
+    echo [SUCCESS] node_modules deleted.
 ) else (
-    echo [توجه] node_modules یافت نشد.
+    echo [INFO] node_modules not found.
 )
 echo.
 
-echo [مرحله ۲] در حال حذف dist...
+echo [Step 2] Deleting dist...
 if exist "dist" (
     rmdir /s /q dist
-    echo [موفق] dist حذف شد.
+    echo [SUCCESS] dist deleted.
 ) else (
-    echo [توجه] dist یافت نشد.
+    echo [INFO] dist not found.
 )
 echo.
 
-echo [مرحله ۳] در حال حذف فایل‌های موقت...
+echo [Step 3] Deleting temporary files...
 if exist "*.log" del /q *.log
 if exist "*.tmp" del /q *.tmp
-echo [موفق] فایل‌های موقت حذف شدند.
+echo [SUCCESS] Temporary files deleted.
 echo.
 
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     ✓ پاک‌سازی با موفقیت انجام شد!                       ║
-echo ║                                                            ║
-echo ║     برای نصب مجدد، فایل "install.bat" را اجرا کنید.      ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Cleanup completed successfully!
+echo.
+echo     To reinstall, run "install.bat"
+echo ================================================================
 echo.
 
 pause

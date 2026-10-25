@@ -1,25 +1,22 @@
 @echo off
-chcp 65001 >nul
-title سیستم حسابداری سرمد - اجرای سریع
+title Sarmad Accounting System - Quick Start
 color 0B
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     سیستم حسابداری سرمد - اجرای سریع                     ║
-echo ║     (بدون نیاز به نصب سرور اضافی)                        ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Sarmad Accounting System - Quick Start
+echo     (No additional server installation required)
+echo ================================================================
 echo.
 
 :: Check if dist folder exists
 if not exist "dist" (
-    echo [توجه] پوشه dist یافت نشد. در حال ساخت پروژه...
+    echo [INFO] dist folder not found. Building project...
     echo.
     call npm run build
     if %ERRORLEVEL% NEQ 0 (
         echo.
-        echo [خطا] ساخت پروژه با مشکل مواجه شد!
+        echo [ERROR] Failed to build project!
         pause
         exit /b 1
     )
@@ -28,29 +25,29 @@ if not exist "dist" (
 
 :: Check if node_modules exists
 if not exist "node_modules" (
-    echo [توجه] وابستگی‌ها نصب نیستند. در حال نصب...
+    echo [INFO] Dependencies not installed. Installing...
     echo.
     call npm install
     if %ERRORLEVEL% NEQ 0 (
         echo.
-        echo [خطا] نصب وابستگی‌ها با مشکل مواجه شد!
+        echo [ERROR] Failed to install dependencies!
         pause
         exit /b 1
     )
     echo.
 )
 
-echo ═══════════════════════════════════════════════════════════
-echo [اطلاعات] راه‌اندازی سرور با Vite Preview...
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
+echo [INFO] Starting server with Vite Preview...
+echo ================================================================
 echo.
-echo برنامه در آدرس زیر در دسترس خواهد بود:
+echo The application will be available at:
 echo.
 echo     http://localhost:4173
 echo.
-echo برای توقف برنامه، کلیدهای Ctrl+C را فشار دهید.
+echo To stop the server, press Ctrl+C
 echo.
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
 echo.
 
 :: Try to open browser after a delay

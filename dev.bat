@@ -1,44 +1,41 @@
 @echo off
-chcp 65001 >nul
-title سیستم حسابداری سرمد - حالت توسعه
+title Sarmad Accounting System - Development Mode
 color 0E
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     سیستم حسابداری سرمد - حالت توسعه (Development)       ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Sarmad Accounting System - Development Mode
+echo ================================================================
 echo.
 
 :: Check if node_modules exists
 if not exist "node_modules" (
-    echo [توجه] وابستگی‌ها نصب نیستند. در حال نصب...
+    echo [INFO] Dependencies not installed. Installing...
     echo.
     call npm install
     if %ERRORLEVEL% NEQ 0 (
         echo.
-        echo [خطا] نصب وابستگی‌ها با مشکل مواجه شد!
+        echo [ERROR] Failed to install dependencies!
         pause
         exit /b 1
     )
     echo.
 )
 
-echo ═══════════════════════════════════════════════════════════
-echo [اطلاعات] راه‌اندازی سرور توسعه Vite...
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
+echo [INFO] Starting Vite development server...
+echo ================================================================
 echo.
-echo برنامه در آدرس زیر در دسترس خواهد بود:
+echo The application will be available at:
 echo.
 echo     http://localhost:5173
 echo.
-echo این حالت برای توسعه مناسب است و تغییرات کد به صورت
-echo خودکار اعمال می‌شوند (Hot Module Replacement).
+echo This mode is for development with Hot Module Replacement.
+echo Changes to code will be applied automatically.
 echo.
-echo برای توقف برنامه، کلیدهای Ctrl+C را فشار دهید.
+echo To stop the server, press Ctrl+C
 echo.
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
 echo.
 
 :: Try to open browser after a delay
