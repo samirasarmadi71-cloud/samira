@@ -11,6 +11,7 @@ import {
   Globe, Printer, Upload, HardDrive, History, Info, Zap,
   Shield, RefreshCw, Wifi, X
 } from 'lucide-react';
+import { getPersianDate } from '../utils/persianDate';
 
 interface LayoutProps {
   children: ReactNode;
@@ -370,7 +371,12 @@ export default function Layout({
                   {item.subItems.map((sub, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setCurrentPage(item.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentPage(item.id);
+                        console.log('Submenu clicked:', sub.label, '→ Page:', item.id);
+                      }}
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
                         padding: '6px 12px', borderRadius: '8px', border: 'none',
@@ -515,7 +521,7 @@ export default function Layout({
                 border: darkMode ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(199, 210, 254, 0.5)'
               }}>
                 <Calendar size={12} color="#6366f1" />
-                <span style={{ fontSize: '11px', color: '#4338ca', fontWeight: 700 }}>۱۴۰۴/۰۴/۱۵</span>
+                <span style={{ fontSize: '11px', color: '#4338ca', fontWeight: 700 }}>{getPersianDate()}</span>
               </div>
 
               {/* Notifications */}
