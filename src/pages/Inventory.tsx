@@ -25,10 +25,10 @@ export default function Inventory() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">انبار و کالا</h1>
+          <h1 className="text-2xl font-black text-gray-800">انبار و کالا</h1>
           <p className="text-sm text-gray-500 mt-1">مدیریت موجودی و عملیات انبار</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm rounded-xl hover:shadow-lg transition-all">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-sm rounded-2xl hover:shadow-lg hover:shadow-cyan-500/30 transition-all active:scale-95">
           <Plus size={16} />
           کالای جدید
         </button>
