@@ -271,15 +271,16 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
   const currentItem = menuItems.find(m => m.id === currentPage);
 
   return (
-    <div className={`flex h-screen overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-[#f0f4f8]'}`}>
+    <div className={`flex h-screen w-screen overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-[#f0f4f8]'}`}>
       {/* Slim Sidebar */}
       <aside 
         className={`
-          ${sidebarOpen ? 'w-64 min-w-[256px]' : 'w-0 min-w-0'} 
+          ${sidebarOpen ? 'w-64 min-w-[256px] pointer-events-auto' : 'w-0 min-w-0 pointer-events-none'} 
           transition-all duration-300 ease-in-out 
           ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} 
-          border-l flex flex-col overflow-hidden shadow-sm z-20 relative
+          border-l flex flex-col shadow-sm z-20 relative
         `}
+        style={{ overflow: sidebarOpen ? 'visible' : 'hidden' }}
       >
         {/* Sidebar Logo */}
         <div className={`h-16 flex items-center justify-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'} px-4`}>
@@ -307,7 +308,7 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
         </div>
 
         {/* Sidebar Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2.5">
+        <nav className="flex-1 overflow-y-auto overflow-x-visible py-3 px-2.5 relative z-10">
           <div className="px-3 mb-2">
             <span className={`text-[10px] font-bold ${darkMode ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>منوی اصلی</span>
           </div>
@@ -315,8 +316,13 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
           {menuItems.map((item) => (
             <div key={item.id} className="mb-0.5">
               <button
-                onClick={() => toggleMenu(item.id)}
-                className={`sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 group relative
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleMenu(item.id);
+                }}
+                type="button"
+                className={`sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 group relative cursor-pointer pointer-events-auto
                   ${expandedMenu === item.id
                     ? darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
                     : darkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-50/80'
@@ -356,7 +362,9 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
                   {item.subItems.map((sub, idx) => (
                     <button
                       key={idx}
-                      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg ${darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'} transition-all text-[11px] group/sub`}
+                      type="button"
+                      onClick={() => setCurrentPage(item.id)}
+                      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg ${darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'} transition-all text-[11px] group/sub cursor-pointer`}
                     >
                       <span className={`${item.color} opacity-50 group-hover/sub:opacity-100 transition-opacity`}>{sub.icon}</span>
                       <span className="group-hover/sub:translate-x-[-2px] transition-transform">{sub.label}</span>
@@ -389,9 +397,9 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Circular Menu Bar */}
-        <header className={`${darkMode ? 'bg-gray-800/90 border-gray-700' : 'glass-effect border-gray-200/50'} border-b z-10 relative`}>
+        <header className={`${darkMode ? 'bg-gray-800/90 border-gray-700' : 'glass-effect border-gray-200/50'} border-b z-10 relative overflow-visible`}>
           {/* Top utility bar */}
           <div className={`flex items-center justify-between px-5 py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100/50'}`}>
             <div className="flex items-center gap-3">
@@ -521,20 +529,23 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
           </div>
 
           {/* Circular Dock Menu */}
-          <div className="flex items-center justify-center py-3 px-4">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl ${darkMode ? 'bg-gray-700/80 border-gray-600/50' : 'glass-effect border-white/50'} dock-shadow border`}>
+          <div className="flex items-center justify-center py-3 px-4 overflow-x-auto">
+            <div className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-2xl ${darkMode ? 'bg-gray-700/80 border-gray-600/50' : 'glass-effect border-white/50'} dock-shadow border flex-shrink-0`}>
               {menuItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setCurrentPage(item.id);
                     setExpandedMenu(item.id);
                   }}
-                  className={`circle-icon group relative flex flex-col items-center ${currentPage === item.id ? 'active' : ''}`}
+                  className={`circle-icon group relative flex flex-col items-center cursor-pointer ${currentPage === item.id ? 'active' : ''}`}
                   title={item.label}
+                  type="button"
                 >
                   <div 
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 ${
+                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 ${
                       currentPage === item.id 
                         ? `shadow-xl ${item.shadowColor} scale-110` 
                         : 'shadow-md hover:shadow-lg opacity-80 hover:opacity-100'
@@ -545,14 +556,14 @@ export default function Layout({ children, currentPage, setCurrentPage, sidebarO
                   >
                     {item.icon}
                   </div>
-                  {/* Tooltip */}
-                  <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {/* Tooltip - pointer-events-none so it doesn't block clicks */}
+                  <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                     <span className={`text-[9px] font-bold ${darkMode ? 'text-gray-200 bg-gray-700 border-gray-600' : 'text-gray-600 bg-white border-gray-100'} px-2 py-0.5 rounded-md shadow-sm border`}>
                       {item.label}
                     </span>
                   </div>
                   {currentPage === item.id && (
-                    <div className="absolute -bottom-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.gradientFrom }}></div>
+                    <div className="absolute -bottom-1.5 w-1.5 h-1.5 rounded-full pointer-events-none" style={{ backgroundColor: item.gradientFrom }}></div>
                   )}
                 </button>
               ))}
