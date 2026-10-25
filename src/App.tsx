@@ -12,6 +12,7 @@ import Accounting from './pages/Accounting';
 import Settings from './pages/Settings';
 import LoginPage from './pages/LoginPage';
 import ChartOfAccounts from './pages/ChartOfAccounts';
+import DatabaseStatus from './components/DatabaseStatus';
 import { initDatabase } from './database/db';
 
 export type PageType = 'dashboard' | 'base-data' | 'contacts' | 'purchases' | 'sales' | 'inventory' | 'treasury' | 'reports' | 'accounting' | 'settings' | 'chart-of-accounts';
@@ -30,6 +31,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [dbLoading, setDbLoading] = useState(true);
   const [notifications, setNotifications] = useState<Array<{id: number; message: string; type: string; time: string}>>([]);
+  const [showDbStatus, setShowDbStatus] = useState(false);
 
   // Initialize database on app start
   useEffect(() => {
@@ -132,9 +134,15 @@ function App() {
         onLogout={handleLogout}
         notifications={notifications}
         onDismissNotification={dismissNotification}
+        onShowDbStatus={() => setShowDbStatus(true)}
       >
         {renderPage()}
       </Layout>
+      
+      {/* Database Status Modal */}
+      {showDbStatus && (
+        <DatabaseStatus onClose={() => setShowDbStatus(false)} />
+      )}
       
       {/* Toast Notifications */}
       <div className="fixed bottom-4 left-4 z-50 space-y-2">

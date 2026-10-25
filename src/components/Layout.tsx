@@ -24,6 +24,7 @@ interface LayoutProps {
   onLogout: () => void;
   notifications: Array<{id: number; message: string; type: string; time: string}>;
   onDismissNotification: (id: number) => void;
+  onShowDbStatus?: () => void;
 }
 
 interface MenuItem {
@@ -187,7 +188,8 @@ export default function Layout({
   sidebarOpen, setSidebarOpen, 
   darkMode, setDarkMode, 
   user, onLogout, 
-  notifications, onDismissNotification 
+  notifications, onDismissNotification,
+  onShowDbStatus
 }: LayoutProps) {
   const [expandedMenu, setExpandedMenu] = useState<PageType>(currentPage);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -252,22 +254,33 @@ export default function Layout({
           </div>
         </div>
 
-        {/* SQLite Badge */}
-        <div style={{
-          margin: '8px 12px', padding: '8px 12px', borderRadius: '12px',
-          background: darkMode ? 'rgba(55, 65, 81, 0.5)' : '#eff6ff',
-          border: darkMode ? '1px solid #4b5563' : '1px solid #dbeafe',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-        }}>
+        {/* SQLite Badge - Clickable */}
+        <button
+          onClick={onShowDbStatus}
+          style={{
+            margin: '8px 12px', padding: '8px 12px', borderRadius: '12px',
+            background: darkMode ? 'rgba(55, 65, 81, 0.5)' : '#eff6ff',
+            border: darkMode ? '1px solid #4b5563' : '1px solid #dbeafe',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            cursor: 'pointer', width: 'calc(100% - 24px)',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.8)' : '#dbeafe';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.5)' : '#eff6ff';
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', animation: 'pulse 2s infinite' }}></div>
-            <span style={{ fontSize: '10px', color: darkMode ? '#d1d5db' : '#4b5563', fontWeight: 500 }}>SQLite فعال</span>
+            <span style={{ fontSize: '10px', color: darkMode ? '#d1d5db' : '#4b5563', fontWeight: 500 }}>پایگاه داده فعال</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Shield size={11} color="#22c55e" />
             <Wifi size={11} color="#60a5fa" />
           </div>
-        </div>
+        </button>
 
         {/* Menu Label */}
         <div style={{ padding: '12px 12px 4px 12px' }}>
