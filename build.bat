@@ -1,54 +1,49 @@
 @echo off
-chcp 65001 >nul
-title سیستم حسابداری سرمد - ساخت پروژه
+title Sarmad Accounting System - Build
 color 0D
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     سیستم حسابداری سرمد - ساخت نسخه نهایی                ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Sarmad Accounting System - Building Production Version
+echo ================================================================
 echo.
 
 :: Check if node_modules exists
 if not exist "node_modules" (
-    echo [توجه] وابستگی‌ها نصب نیستند. در حال نصب...
+    echo [INFO] Dependencies not installed. Installing...
     echo.
     call npm install
     if %ERRORLEVEL% NEQ 0 (
         echo.
-        echo [خطا] نصب وابستگی‌ها با مشکل مواجه شد!
+        echo [ERROR] Failed to install dependencies!
         pause
         exit /b 1
     )
     echo.
 )
 
-echo ═══════════════════════════════════════════════════════════
-echo [اطلاعات] در حال ساخت پروژه...
-echo ═══════════════════════════════════════════════════════════
+echo ================================================================
+echo [INFO] Building project...
+echo ================================================================
 echo.
 
 call npm run build
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo [خطا] ساخت پروژه با مشکل مواجه شد!
+    echo [ERROR] Failed to build project!
     pause
     exit /b 1
 )
 
 echo.
-echo ╔════════════════════════════════════════════════════════════╗
-echo ║                                                            ║
-echo ║     ✓ پروژه با موفقیت ساخته شد!                          ║
-echo ║                                                            ║
-echo ║     فایل‌های نهایی در پوشه "dist" قرار دارند.            ║
-echo ║                                                            ║
-echo ║     برای اجرای برنامه، فایل "start.bat" را اجرا کنید.    ║
-echo ║                                                            ║
-echo ╚════════════════════════════════════════════════════════════╝
+echo ================================================================
+echo     Build completed successfully!
+echo.
+echo     Production files are in the "dist" folder.
+echo.
+echo     To run the application, execute "start.bat"
+echo ================================================================
 echo.
 
 pause
