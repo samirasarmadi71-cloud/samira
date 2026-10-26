@@ -64,6 +64,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       runQuery(`INSERT INTO audit_logs (user_id, action, table_name, record_id) VALUES (?, ?, ?, ?)`, 
         [user.id, 'login', 'users', user.id]);
 
+      // Save session with timestamp
+      localStorage.setItem('sarmad_session_time', Date.now().toString());
+
       onLogin({
         id: user.id,
         username: user.username,
