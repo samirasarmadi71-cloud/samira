@@ -41,10 +41,23 @@ function App() {
       try {
         await initDatabase();
         // Check if user was logged in before (session)
+        // Only restore session if it's less than 1 hour old
         const savedUser = localStorage.getItem('sarmad_user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+        const sessionTime = localStorage.getItem('sarmad_session_time');
+        
+        if (savedUser && sessionTime) {
+          const elapsed = Date.now() - parseInt(sessionTime);
+          const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+          
+          if (elapsed < oneHour) {
+            setUser(JSON.parse(savedUser));
+          } else {
+            // Session expired
+            localStorage.removeItem('sarmad_user');
+            localStorage.removeItem('sarmad_session_time');
+          }
         }
+        
         // Load dark mode preference
         const savedDark = localStorage.getItem('sarmad_dark_mode');
         if (savedDark === 'true') setDarkMode(true);
