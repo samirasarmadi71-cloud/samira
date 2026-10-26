@@ -13,6 +13,7 @@ import Settings from './pages/Settings';
 import LoginPage from './pages/LoginPage';
 import ChartOfAccounts from './pages/ChartOfAccounts';
 import DatabaseStatus from './components/DatabaseStatus';
+import SubPageRenderer from './components/SubPageRenderer';
 import { initDatabase } from './database/db';
 
 export type PageType = 'dashboard' | 'base-data' | 'contacts' | 'purchases' | 'sales' | 'inventory' | 'treasury' | 'reports' | 'accounting' | 'settings' | 'chart-of-accounts';
@@ -106,6 +107,12 @@ function App() {
   }
 
   const renderPage = () => {
+    // If subPage is set, render the subpage
+    if (subPage) {
+      return <SubPageRenderer module={currentPage} subPage={subPage} />;
+    }
+
+    // Otherwise render the main page
     switch (currentPage) {
       case 'dashboard': return <Dashboard />;
       case 'base-data': return <BaseData />;
@@ -114,7 +121,7 @@ function App() {
       case 'sales': return <Sales />;
       case 'inventory': return <Inventory />;
       case 'treasury': return <Treasury />;
-      case 'reports': return <Reports subPage={subPage} />;
+      case 'reports': return <Reports />;
       case 'accounting': return <Accounting />;
       case 'settings': return <Settings />;
       case 'chart-of-accounts': return <ChartOfAccounts />;

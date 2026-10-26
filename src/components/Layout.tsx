@@ -372,8 +372,64 @@ export default function Layout({
                   animation: 'fadeIn 0.2s ease-out'
                 }}>
                   {item.subItems.map((sub, idx) => {
-                    // Map submenu labels to subPage IDs
+                    // Complete mapping of all submenus to subPage IDs
                     const subPageMap: Record<string, Record<string, string>> = {
+                      'base-data': {
+                        'اطلاعات شرکت': 'company',
+                        'سال مالی و دوره‌ها': 'fiscal-years',
+                        'گروه کالا و خدمات': 'item-groups',
+                        'واحدها': 'units',
+                        'انبارها': 'warehouses',
+                        'صندوق و بانک': 'cash-bank',
+                        'کدینگ حساب‌ها': 'chart-of-accounts',
+                        'روش‌های پرداخت': 'payment-methods',
+                        'شماره‌گذاری اسناد': 'numbering'
+                      },
+                      'contacts': {
+                        'فهرست اشخاص': 'list',
+                        'شخص جدید': 'new',
+                        'مشتریان': 'customers',
+                        'تأمین‌کنندگان': 'suppliers',
+                        'پرونده شخص': 'profile',
+                        'گردش حساب': 'transactions',
+                        'مانده حساب': 'balance'
+                      },
+                      'purchases': {
+                        'فاکتور خرید جدید': 'new',
+                        'فهرست فاکتورها': 'list',
+                        'پیش‌فاکتور و سفارش': 'proforma',
+                        'برگشت از خرید': 'returns',
+                        'هزینه‌های خرید': 'expenses',
+                        'گزارش خرید': 'report'
+                      },
+                      'sales': {
+                        'فاکتور فروش جدید': 'new',
+                        'فهرست فاکتورها': 'list',
+                        'پیش‌فاکتور و سفارش': 'proforma',
+                        'برگشت از فروش': 'returns',
+                        'دریافت‌های مرتبط': 'receivables',
+                        'گزارش فروش و سود': 'report'
+                      },
+                      'inventory': {
+                        'فهرست کالا و خدمات': 'list',
+                        'رسید ورود': 'receipt',
+                        'حواله خروج': 'issue',
+                        'انتقال بین انبارها': 'transfer',
+                        'انبارگردانی': 'stocktake',
+                        'کارتکس': 'cardex',
+                        'گزارش موجودی': 'report',
+                        'کالاهای کم‌موجود': 'low-stock'
+                      },
+                      'treasury': {
+                        'دریافت وجه': 'receive',
+                        'پرداخت وجه': 'pay',
+                        'صندوق و بانک': 'cash-bank',
+                        'انتقال وجه': 'transfer',
+                        'چک‌های دریافتی': 'received-checks',
+                        'چک‌های پرداختی': 'paid-checks',
+                        'سررسید چک‌ها': 'due-dates',
+                        'مغایرت بانکی': 'reconciliation'
+                      },
                       'reports': {
                         'فروش و خرید': 'sales-purchase',
                         'موجودی و گردش کالا': 'inventory',
@@ -385,15 +441,23 @@ export default function Layout({
                         'سود و زیان': 'profit-loss',
                         'ترازنامه': 'balance-sheet'
                       },
-                      'inventory': {
-                        'فهرست کالا و خدمات': 'list',
-                        'رسید ورود': 'receipt',
-                        'حواله خروج': 'issue',
-                        'انتقال بین انبارها': 'transfer',
-                        'انبارگردانی': 'stocktake',
-                        'کارتکس': 'cardex',
-                        'گزارش موجودی': 'report',
-                        'کالاهای کم‌موجود': 'low-stock'
+                      'accounting': {
+                        'ثبت سند': 'new',
+                        'فهرست اسناد': 'list',
+                        'اسناد پیش‌نویس': 'drafts',
+                        'اسناد تأییدشده و قطعی': 'finalized',
+                        'اسناد اصلاحی و برگشتی': 'corrections',
+                        'بستن دوره مالی': 'close-period'
+                      },
+                      'settings': {
+                        'کاربران و مجوزها': 'users',
+                        'ظاهر': 'appearance',
+                        'تاریخ، ارقام و واحد پول': 'datetime',
+                        'قالب چاپ': 'print',
+                        'ورود و خروج Excel': 'excel',
+                        'پشتیبان‌گیری و بازیابی': 'backup',
+                        'سوابق عملیات': 'audit',
+                        'اطلاعات نسخه': 'version'
                       }
                     };
                     
