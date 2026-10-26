@@ -20,7 +20,13 @@ class SQLiteDatabase implements DBInterface {
       const initSqlJs = (await import('sql.js')).default;
       
       this.SQL = await initSqlJs({
-        locateFile: (file: string) => `https://sql.js.org/dist/${file}`
+        locateFile: (file: string) => {
+          // Use correct file name for wasm
+          if (file.endsWith('.wasm')) {
+            return `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.wasm`;
+          }
+          return `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${file}`;
+        }
       });
 
       // Try to load existing database
