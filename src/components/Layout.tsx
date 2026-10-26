@@ -17,6 +17,8 @@ interface LayoutProps {
   children: ReactNode;
   currentPage: PageType;
   setCurrentPage: (page: PageType) => void;
+  subPage?: string;
+  setSubPage?: (page: string) => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   darkMode: boolean;
@@ -185,7 +187,8 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function Layout({ 
-  children, currentPage, setCurrentPage, 
+  children, currentPage, setCurrentPage,
+  subPage, setSubPage,
   sidebarOpen, setSidebarOpen, 
   darkMode, setDarkMode, 
   user, onLogout, 
@@ -368,35 +371,131 @@ export default function Layout({
                   paddingRight: '10px',
                   animation: 'fadeIn 0.2s ease-out'
                 }}>
-                  {item.subItems.map((sub, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCurrentPage(item.id);
-                        console.log('Submenu clicked:', sub.label, '→ Page:', item.id);
-                      }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
-                        padding: '6px 12px', borderRadius: '8px', border: 'none',
-                        cursor: 'pointer', background: 'transparent',
-                        color: darkMode ? '#9ca3af' : '#9ca3af',
-                        fontSize: '11px', transition: 'all 0.2s', textAlign: 'right'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb';
-                        e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#374151';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = darkMode ? '#9ca3af' : '#9ca3af';
-                      }}
-                    >
-                      <span style={{ color: item.color, opacity: 0.6 }}>{sub.icon}</span>
-                      <span>{sub.label}</span>
-                    </button>
-                  ))}
+                  {item.subItems.map((sub, idx) => {
+                    // Complete mapping of all submenus to subPage IDs
+                    const subPageMap: Record<string, Record<string, string>> = {
+                      'base-data': {
+                        'اطلاعات شرکت': 'company',
+                        'سال مالی و دوره‌ها': 'fiscal-years',
+                        'گروه کالا و خدمات': 'item-groups',
+                        'واحدها': 'units',
+                        'انبارها': 'warehouses',
+                        'صندوق و بانک': 'cash-bank',
+                        'کدینگ حساب‌ها': 'chart-of-accounts',
+                        'روش‌های پرداخت': 'payment-methods',
+                        'شماره‌گذاری اسناد': 'numbering'
+                      },
+                      'contacts': {
+                        'فهرست اشخاص': 'list',
+                        'شخص جدید': 'new',
+                        'مشتریان': 'customers',
+                        'تأمین‌کنندگان': 'suppliers',
+                        'پرونده شخص': 'profile',
+                        'گردش حساب': 'transactions',
+                        'مانده حساب': 'balance'
+                      },
+                      'purchases': {
+                        'فاکتور خرید جدید': 'new',
+                        'فهرست فاکتورها': 'list',
+                        'پیش‌فاکتور و سفارش': 'proforma',
+                        'برگشت از خرید': 'returns',
+                        'هزینه‌های خرید': 'expenses',
+                        'گزارش خرید': 'report'
+                      },
+                      'sales': {
+                        'فاکتور فروش جدید': 'new',
+                        'فهرست فاکتورها': 'list',
+                        'پیش‌فاکتور و سفارش': 'proforma',
+                        'برگشت از فروش': 'returns',
+                        'دریافت‌های مرتبط': 'receivables',
+                        'گزارش فروش و سود': 'report'
+                      },
+                      'inventory': {
+                        'فهرست کالا و خدمات': 'list',
+                        'رسید ورود': 'receipt',
+                        'حواله خروج': 'issue',
+                        'انتقال بین انبارها': 'transfer',
+                        'انبارگردانی': 'stocktake',
+                        'کارتکس': 'cardex',
+                        'گزارش موجودی': 'report',
+                        'کالاهای کم‌موجود': 'low-stock'
+                      },
+                      'treasury': {
+                        'دریافت وجه': 'receive',
+                        'پرداخت وجه': 'pay',
+                        'صندوق و بانک': 'cash-bank',
+                        'انتقال وجه': 'transfer',
+                        'چک‌های دریافتی': 'received-checks',
+                        'چک‌های پرداختی': 'paid-checks',
+                        'سررسید چک‌ها': 'due-dates',
+                        'مغایرت بانکی': 'reconciliation'
+                      },
+                      'reports': {
+                        'فروش و خرید': 'sales-purchase',
+                        'موجودی و گردش کالا': 'inventory',
+                        'حساب اشخاص': 'contacts',
+                        'صندوق و بانک': 'cash-bank',
+                        'دفتر روزنامه': 'journal',
+                        'دفتر کل و معین': 'ledger',
+                        'تراز آزمایشی': 'trial-balance',
+                        'سود و زیان': 'profit-loss',
+                        'ترازنامه': 'balance-sheet'
+                      },
+                      'accounting': {
+                        'ثبت سند': 'new',
+                        'فهرست اسناد': 'list',
+                        'اسناد پیش‌نویس': 'drafts',
+                        'اسناد تأییدشده و قطعی': 'finalized',
+                        'اسناد اصلاحی و برگشتی': 'corrections',
+                        'بستن دوره مالی': 'close-period'
+                      },
+                      'settings': {
+                        'کاربران و مجوزها': 'users',
+                        'ظاهر': 'appearance',
+                        'تاریخ، ارقام و واحد پول': 'datetime',
+                        'قالب چاپ': 'print',
+                        'ورود و خروج Excel': 'excel',
+                        'پشتیبان‌گیری و بازیابی': 'backup',
+                        'سوابق عملیات': 'audit',
+                        'اطلاعات نسخه': 'version'
+                      }
+                    };
+                    
+                    const subPageId = subPageMap[item.id]?.[sub.label] || '';
+                    
+                    return (
+                      <button
+                        key={idx}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setCurrentPage(item.id);
+                          if (setSubPage && subPageId) {
+                            setSubPage(subPageId);
+                          }
+                          console.log('Submenu clicked:', sub.label, '→ Page:', item.id, 'SubPage:', subPageId);
+                        }}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '6px 12px', borderRadius: '8px', border: 'none',
+                          cursor: 'pointer', background: 'transparent',
+                          color: darkMode ? '#9ca3af' : '#9ca3af',
+                          fontSize: '11px', transition: 'all 0.2s', textAlign: 'right'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb';
+                          e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#374151';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = darkMode ? '#9ca3af' : '#9ca3af';
+                        }}
+                      >
+                        <span style={{ color: item.color, opacity: 0.6 }}>{sub.icon}</span>
+                        <span>{sub.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
