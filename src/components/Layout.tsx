@@ -17,6 +17,8 @@ interface LayoutProps {
   children: ReactNode;
   currentPage: PageType;
   setCurrentPage: (page: PageType) => void;
+  subPage?: string;
+  setSubPage?: (page: string) => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   darkMode: boolean;
@@ -185,7 +187,8 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function Layout({ 
-  children, currentPage, setCurrentPage, 
+  children, currentPage, setCurrentPage,
+  subPage, setSubPage,
   sidebarOpen, setSidebarOpen, 
   darkMode, setDarkMode, 
   user, onLogout, 
@@ -368,35 +371,67 @@ export default function Layout({
                   paddingRight: '10px',
                   animation: 'fadeIn 0.2s ease-out'
                 }}>
-                  {item.subItems.map((sub, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCurrentPage(item.id);
-                        console.log('Submenu clicked:', sub.label, '→ Page:', item.id);
-                      }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
-                        padding: '6px 12px', borderRadius: '8px', border: 'none',
-                        cursor: 'pointer', background: 'transparent',
-                        color: darkMode ? '#9ca3af' : '#9ca3af',
-                        fontSize: '11px', transition: 'all 0.2s', textAlign: 'right'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb';
-                        e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#374151';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = darkMode ? '#9ca3af' : '#9ca3af';
-                      }}
-                    >
-                      <span style={{ color: item.color, opacity: 0.6 }}>{sub.icon}</span>
-                      <span>{sub.label}</span>
-                    </button>
-                  ))}
+                  {item.subItems.map((sub, idx) => {
+                    // Map submenu labels to subPage IDs
+                    const subPageMap: Record<string, Record<string, string>> = {
+                      'reports': {
+                        'فروش و خرید': 'sales-purchase',
+                        'موجودی و گردش کالا': 'inventory',
+                        'حساب اشخاص': 'contacts',
+                        'صندوق و بانک': 'cash-bank',
+                        'دفتر روزنامه': 'journal',
+                        'دفتر کل و معین': 'ledger',
+                        'تراز آزمایشی': 'trial-balance',
+                        'سود و زیان': 'profit-loss',
+                        'ترازنامه': 'balance-sheet'
+                      },
+                      'inventory': {
+                        'فهرست کالا و خدمات': 'list',
+                        'رسید ورود': 'receipt',
+                        'حواله خروج': 'issue',
+                        'انتقال بین انبارها': 'transfer',
+                        'انبارگردانی': 'stocktake',
+                        'کارتکس': 'cardex',
+                        'گزارش موجودی': 'report',
+                        'کالاهای کم‌موجود': 'low-stock'
+                      }
+                    };
+                    
+                    const subPageId = subPageMap[item.id]?.[sub.label] || '';
+                    
+                    return (
+                      <button
+                        key={idx}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setCurrentPage(item.id);
+                          if (setSubPage && subPageId) {
+                            setSubPage(subPageId);
+                          }
+                          console.log('Submenu clicked:', sub.label, '→ Page:', item.id, 'SubPage:', subPageId);
+                        }}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '6px 12px', borderRadius: '8px', border: 'none',
+                          cursor: 'pointer', background: 'transparent',
+                          color: darkMode ? '#9ca3af' : '#9ca3af',
+                          fontSize: '11px', transition: 'all 0.2s', textAlign: 'right'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = darkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb';
+                          e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#374151';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = darkMode ? '#9ca3af' : '#9ca3af';
+                        }}
+                      >
+                        <span style={{ color: item.color, opacity: 0.6 }}>{sub.icon}</span>
+                        <span>{sub.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

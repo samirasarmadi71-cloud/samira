@@ -26,6 +26,7 @@ interface User {
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
+  const [subPage, setSubPage] = useState<string>('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -113,7 +114,7 @@ function App() {
       case 'sales': return <Sales />;
       case 'inventory': return <Inventory />;
       case 'treasury': return <Treasury />;
-      case 'reports': return <Reports />;
+      case 'reports': return <Reports subPage={subPage} />;
       case 'accounting': return <Accounting />;
       case 'settings': return <Settings />;
       case 'chart-of-accounts': return <ChartOfAccounts />;
@@ -126,6 +127,8 @@ function App() {
       <Layout
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
+        subPage={subPage}
+        setSubPage={setSubPage}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         darkMode={darkMode}
