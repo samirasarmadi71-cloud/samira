@@ -1,8 +1,9 @@
 // ============ Database facade — REAL SQLite (sql.js) engine ============
-import { getSqlite, SqliteDatabase } from './sqlite';
-import { runMigrations, seedDemoData, hashPassword } from './schema';
+import { getSqlite, resetSqliteInstance, SqliteDatabase } from './sqlite';
+import { runMigrations, seedDemoData, hashPassword, verifyPassword } from './schema';
 
 let db: SqliteDatabase | null = null;
+let initPromise: Promise<void> | null = null;
 
 /** Compatibility column aliases so legacy queries keep working on the real schema */
 const ALIASES: Record<string, string[]> = {
@@ -36,13 +37,40 @@ function decorate(table: string, rows: any[]): any[] {
   });
 }
 
-export async function initDatabase(): Promise<void> {
-  if (db) return;
-  db = await getSqlite();
-  runMigrations(db);
-  seedDemoData(db);
-  db.save();
-  console.log('✅ SQLite database ready');
+export function initDatabase(): Promise<void> {
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    try {
+      db = await getSqlite();
+      runMigrations(db);
+      seedDemoData(db);
+      // self-heal password hashes even when users table was already seeded
+      try {
+        const allUsers = db.all<any>(`SELECT id, username, password_hash FROM users`);
+        for (const ur of allUsers) {
+          const h = String(ur.password_hash ?? '');
+          if (!h.startsWith('v2:')) {
+            const pw = ur.username === 'admin' ? 'admin123' : '1234';
+            db.update('users', ur.id, { password_hash: hashPassword(pw) });
+          }
+        }
+      } catch { /* ignore */ }
+      db.save();
+      console.log('✅ SQLite database ready');
+    } catch (e) {
+      // a corrupt saved database must never lock the user out — rebuild from scratch
+      console.error('DB init failed, rebuilding fresh database:', e);
+      try { localStorage.removeItem('sarmad_sqlite_db'); } catch { /* ignore */ }
+      resetSqliteInstance();
+      db = await getSqlite();
+      runMigrations(db);
+      seedDemoData(db);
+      db.save();
+    } finally {
+      initPromise = null;
+    }
+  })();
+  return initPromise;
 }
 
 export function getDbInstance(): SqliteDatabase {
@@ -140,4 +168,4 @@ export function integrityCheck(): boolean {
   return db ? db.integrityCheck() : false;
 }
 
-export { hashPassword };
+export { hashPassword, verifyPassword };

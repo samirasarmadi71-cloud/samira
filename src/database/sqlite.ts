@@ -164,3 +164,8 @@ export async function getSqlite(): Promise<SqliteDatabase> {
   }
   return instance;
 }
+
+/** force-drop the singleton so a fresh engine can be built after wiping storage */
+export function resetSqliteInstance(): void {
+  instance = null;
+}
