@@ -33,7 +33,7 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Vazirmatn, sans-serif' }}>
+    <div style={{ padding: '24px', fontFamily: 'Vazirmatn, Tahoma, sans-serif' }}>
       {/* Success Message */}
       {message && (
         <div style={{
@@ -54,8 +54,11 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{title}</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <h1 style={{ fontSize: '22px', fontWeight: '800', margin: 0, color: '#111827' }}>{title}</h1>
+          <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0 0' }}>مدیریت و ویرایش اطلاعات</p>
+        </div>
         {onAdd && (
           <button
             onClick={() => {
@@ -63,15 +66,16 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
               onAdd();
             }}
             style={{
-              background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+              background: 'linear-gradient(135deg, #1e40af, #1e3a8a)',
               color: 'white',
               border: 'none',
-              padding: '10px 20px',
-              borderRadius: '12px',
+              padding: '10px 24px',
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: 'bold',
-              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+              fontWeight: '600',
+              boxShadow: '0 2px 8px rgba(30, 64, 175, 0.2)',
+              transition: 'all 0.2s'
             }}
           >
             + افزودن
@@ -89,56 +93,78 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
           style={{
             width: '100%',
             padding: '10px 16px',
-            borderRadius: '12px',
+            borderRadius: '8px',
             border: '1px solid #e5e7eb',
             fontSize: '14px',
-            outline: 'none'
+            outline: 'none',
+            background: 'white',
+            transition: 'all 0.2s',
+            boxSizing: 'border-box'
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = '#1e40af';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(30, 64, 175, 0.1)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = 'none';
           }}
         />
       </div>
 
       {/* Table */}
-      <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+      <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+            <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
               {columns.map(col => (
-                <th key={col.key} style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: 'bold', color: '#6b7280' }}>
+                <th key={col.key} style={{ padding: '14px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {col.label}
                 </th>
               ))}
-              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: 'bold', color: '#6b7280' }}>عملیات</th>
+              <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>عملیات</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((item, idx) => (
-              <tr key={item.id || idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
+              <tr key={item.id || idx} style={{ borderBottom: '1px solid #f3f4f6', transition: 'background 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+              >
                 {columns.map(col => (
-                  <td key={col.key} style={{ padding: '12px 16px', fontSize: '14px' }}>
+                  <td key={col.key} style={{ padding: '14px 16px', fontSize: '14px', color: '#374151' }}>
                     {col.render ? col.render(item) : (item[col.key] || '-')}
                   </td>
                 ))}
-                <td style={{ padding: '12px 16px' }}>
-                  <div style={{ display: 'flex', gap: '4px' }}>
+                <td style={{ padding: '14px 16px' }}>
+                  <div style={{ display: 'flex', gap: '6px' }}>
                     {onView && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           console.log('View clicked:', item);
                           onView(item);
-                          showMessage('مشاهده رکورد');
+                          showMessage('✓ رکورد با موفقیت مشاهده شد');
                         }}
                         style={{
                           background: '#eff6ff',
-                          border: 'none',
-                          padding: '6px 10px',
-                          borderRadius: '8px',
+                          border: '1px solid #dbeafe',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
                           cursor: 'pointer',
                           fontSize: '12px',
-                          color: '#3b82f6'
+                          color: '#1e40af',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#dbeafe';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#eff6ff';
                         }}
                       >
-                        👁️
+                        👁️ مشاهده
                       </button>
                     )}
                     {onEdit && (
@@ -147,19 +173,27 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
                           e.stopPropagation();
                           console.log('Edit clicked:', item);
                           onEdit(item);
-                          showMessage('ویرایش رکورد');
+                          showMessage('✓ حالت ویرایش فعال شد');
                         }}
                         style={{
-                          background: '#fef3c7',
-                          border: 'none',
-                          padding: '6px 10px',
-                          borderRadius: '8px',
+                          background: '#fffbeb',
+                          border: '1px solid #fde68a',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
                           cursor: 'pointer',
                           fontSize: '12px',
-                          color: '#f59e0b'
+                          color: '#b45309',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#fde68a';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#fffbeb';
                         }}
                       >
-                        ✏️
+                        ✏️ ویرایش
                       </button>
                     )}
                     {onDelete && (
@@ -167,22 +201,30 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
                         onClick={(e) => {
                           e.stopPropagation();
                           console.log('Delete clicked:', item);
-                          if (confirm('آیا از حذف مطمئن هستید؟')) {
+                          if (confirm('آیا از حذف این رکورد مطمئن هستید؟')) {
                             onDelete(item);
-                            showMessage('رکورد حذف شد');
+                            showMessage('✓ رکورد با موفقیت حذف شد');
                           }
                         }}
                         style={{
-                          background: '#fee2e2',
-                          border: 'none',
-                          padding: '6px 10px',
-                          borderRadius: '8px',
+                          background: '#fef2f2',
+                          border: '1px solid #fecaca',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
                           cursor: 'pointer',
                           fontSize: '12px',
-                          color: '#ef4444'
+                          color: '#be123c',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#fecaca';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#fef2f2';
                         }}
                       >
-                        🗑️
+                        🗑️ حذف
                       </button>
                     )}
                   </div>
@@ -192,8 +234,13 @@ export default function SimpleTable({ title, columns, data, onAdd, onEdit, onDel
           </tbody>
         </table>
         {filteredData.length === 0 && (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>
-            {data.length === 0 ? 'هنوز رکوردی ثبت نشده' : 'موردی یافت نشد'}
+          <div style={{ padding: '60px 20px', textAlign: 'center', color: '#9ca3af' }}>
+            {data.length === 0 ? (
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>هنوز رکوردی ثبت نشده است</p>
+                <p style={{ fontSize: '14px' }}>برای شروع، روی دکمه "افزودن" کلیک کنید</p>
+              </div>
+            ) : 'موردی یافت نشد'}
           </div>
         )}
       </div>

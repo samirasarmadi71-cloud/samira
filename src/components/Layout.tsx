@@ -41,10 +41,31 @@ interface MenuItem {
   subItems: { label: string; icon: ReactNode }[];
 }
 
+// Official color palette
+const COLORS = {
+  primary: '#1e40af',
+  primaryDark: '#1e3a8a',
+  primaryLight: '#3b82f6',
+  secondary: '#047857',
+  accent: '#7e22ce',
+  warning: '#b45309',
+  danger: '#be123c',
+  gray50: '#f9fafb',
+  gray100: '#f3f4f6',
+  gray200: '#e5e7eb',
+  gray300: '#d1d5db',
+  gray400: '#9ca3af',
+  gray500: '#6b7280',
+  gray600: '#4b5563',
+  gray700: '#374151',
+  gray800: '#1f2937',
+  gray900: '#111827',
+};
+
 const menuItems: MenuItem[] = [
   {
     id: 'dashboard', label: 'داشبورد', icon: <LayoutDashboard size={22} />,
-    color: 'text-blue-600', gradientFrom: '#3b82f6', gradientTo: '#1d4ed8', shadowColor: 'shadow-blue-500/40',
+    color: 'text-blue-600', gradientFrom: '#1e40af', gradientTo: '#1e3a8a', shadowColor: 'shadow-blue-500/40',
     subItems: [
       { label: 'نمای کلی', icon: <LayoutDashboard size={15} /> },
       { label: 'وضعیت مالی', icon: <DollarSign size={15} /> },
@@ -56,7 +77,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'base-data', label: 'اطلاعات پایه', icon: <Database size={22} />,
-    color: 'text-emerald-600', gradientFrom: '#10b981', gradientTo: '#047857', shadowColor: 'shadow-emerald-500/40',
+    color: 'text-emerald-600', gradientFrom: '#047857', gradientTo: '#065f46', shadowColor: 'shadow-emerald-500/40',
     subItems: [
       { label: 'اطلاعات شرکت', icon: <Building2 size={15} /> },
       { label: 'سال مالی و دوره‌ها', icon: <Calendar size={15} /> },
@@ -71,7 +92,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'contacts', label: 'معرفی اشخاص', icon: <Users size={22} />,
-    color: 'text-violet-600', gradientFrom: '#8b5cf6', gradientTo: '#6d28d9', shadowColor: 'shadow-violet-500/40',
+    color: 'text-violet-600', gradientFrom: '#7e22ce', gradientTo: '#6b21a8', shadowColor: 'shadow-violet-500/40',
     subItems: [
       { label: 'فهرست اشخاص', icon: <Users size={15} /> },
       { label: 'شخص جدید', icon: <UserPlus size={15} /> },
@@ -84,7 +105,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'purchases', label: 'خرید', icon: <ShoppingCart size={22} />,
-    color: 'text-amber-600', gradientFrom: '#f59e0b', gradientTo: '#d97706', shadowColor: 'shadow-amber-500/40',
+    color: 'text-amber-600', gradientFrom: '#b45309', gradientTo: '#92400e', shadowColor: 'shadow-amber-500/40',
     subItems: [
       { label: 'فاکتور خرید جدید', icon: <Receipt size={15} /> },
       { label: 'فهرست فاکتورها', icon: <ClipboardList size={15} /> },
@@ -96,7 +117,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'sales', label: 'فروش', icon: <TrendingUp size={22} />,
-    color: 'text-rose-600', gradientFrom: '#f43f5e', gradientTo: '#e11d48', shadowColor: 'shadow-rose-500/40',
+    color: 'text-rose-600', gradientFrom: '#be123c', gradientTo: '#9f1239', shadowColor: 'shadow-rose-500/40',
     subItems: [
       { label: 'فاکتور فروش جدید', icon: <Receipt size={15} /> },
       { label: 'فهرست فاکتورها', icon: <ClipboardList size={15} /> },
@@ -108,7 +129,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'inventory', label: 'انبار و کالا', icon: <Package size={22} />,
-    color: 'text-cyan-600', gradientFrom: '#06b6d4', gradientTo: '#0891b2', shadowColor: 'shadow-cyan-500/40',
+    color: 'text-cyan-600', gradientFrom: '#0e7490', gradientTo: '#155e75', shadowColor: 'shadow-cyan-500/40',
     subItems: [
       { label: 'فهرست کالا و خدمات', icon: <Package size={15} /> },
       { label: 'رسید ورود', icon: <ArrowRightLeft size={15} /> },
@@ -122,7 +143,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'treasury', label: 'چک و خزانه', icon: <Landmark size={22} />,
-    color: 'text-indigo-600', gradientFrom: '#6366f1', gradientTo: '#4338ca', shadowColor: 'shadow-indigo-500/40',
+    color: 'text-indigo-600', gradientFrom: '#4338ca', gradientTo: '#3730a3', shadowColor: 'shadow-indigo-500/40',
     subItems: [
       { label: 'دریافت وجه', icon: <Banknote size={15} /> },
       { label: 'پرداخت وجه', icon: <DollarSign size={15} /> },
@@ -136,7 +157,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'reports', label: 'گزارشات', icon: <BarChart3 size={22} />,
-    color: 'text-teal-600', gradientFrom: '#14b8a6', gradientTo: '#0d9488', shadowColor: 'shadow-teal-500/40',
+    color: 'text-teal-600', gradientFrom: '#0f766e', gradientTo: '#115e59', shadowColor: 'shadow-teal-500/40',
     subItems: [
       { label: 'فروش و خرید', icon: <BarChart3 size={15} /> },
       { label: 'موجودی و گردش کالا', icon: <Package size={15} /> },
@@ -151,7 +172,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'accounting', label: 'اسناد حسابداری', icon: <BookOpen size={22} />,
-    color: 'text-fuchsia-600', gradientFrom: '#d946ef', gradientTo: '#c026d3', shadowColor: 'shadow-fuchsia-500/40',
+    color: 'text-fuchsia-600', gradientFrom: '#a21caf', gradientTo: '#86198f', shadowColor: 'shadow-fuchsia-500/40',
     subItems: [
       { label: 'ثبت سند', icon: <PenTool size={15} /> },
       { label: 'فهرست اسناد', icon: <ClipboardList size={15} /> },
@@ -163,7 +184,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'settings', label: 'تنظیمات', icon: <Settings size={22} />,
-    color: 'text-slate-600', gradientFrom: '#64748b', gradientTo: '#475569', shadowColor: 'shadow-slate-500/40',
+    color: 'text-slate-600', gradientFrom: '#475569', gradientTo: '#334155', shadowColor: 'shadow-slate-500/40',
     subItems: [
       { label: 'کاربران و مجوزها', icon: <Users size={15} /> },
       { label: 'ظاهر', icon: <Palette size={15} /> },
@@ -177,7 +198,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'chart-of-accounts', label: 'کدینگ حساب‌ها', icon: <FileText size={22} />,
-    color: 'text-pink-600', gradientFrom: '#ec4899', gradientTo: '#db2777', shadowColor: 'shadow-pink-500/40',
+    color: 'text-pink-600', gradientFrom: '#be185d', gradientTo: '#9d174d', shadowColor: 'shadow-pink-500/40',
     subItems: [
       { label: 'حساب‌های کل', icon: <FileText size={15} /> },
       { label: 'حساب‌های معین', icon: <FileText size={15} /> },
