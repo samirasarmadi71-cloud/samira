@@ -673,23 +673,24 @@ export default function SubPageRenderer({ module, subPage }: SubPageRendererProp
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0, color: '#1f2937' }}>{title}</h1>
-          <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>مدیریت و ویرایش اطلاعات</p>
+          <h1 style={{ fontSize: '22px', fontWeight: '800', margin: 0, color: '#111827' }}>{title}</h1>
+          <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0 0' }}>مدیریت و ویرایش اطلاعات</p>
         </div>
         <button
           onClick={handleAdd}
           style={{
-            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+            background: 'linear-gradient(135deg, #1e40af, #1e3a8a)',
             color: 'white',
             border: 'none',
-            padding: '10px 20px',
-            borderRadius: '12px',
+            padding: '10px 24px',
+            borderRadius: '8px',
             cursor: 'pointer',
             fontSize: '14px',
-            fontWeight: 'bold',
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+            fontWeight: '600',
+            boxShadow: '0 2px 8px rgba(30, 64, 175, 0.2)',
+            transition: 'all 0.2s'
           }}
         >
           + افزودن
