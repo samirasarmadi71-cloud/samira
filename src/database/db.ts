@@ -5,6 +5,17 @@ import { runMigrations, seedDemoData, hashPassword, verifyPassword } from './sch
 let db: SqliteDatabase | null = null;
 let initPromise: Promise<void> | null = null;
 
+/** global error surface so the UI can show a friendly banner instead of a silent lockout */
+type DbErrorListener = (msg: string) => void;
+const errorListeners = new Set<DbErrorListener>();
+export function onDatabaseError(fn: DbErrorListener): () => void {
+  errorListeners.add(fn);
+  return () => errorListeners.delete(fn);
+}
+function emitDbError(msg: string) {
+  errorListeners.forEach((f) => { try { f(msg); } catch { /* ignore */ } });
+}
+
 /** Compatibility column aliases so legacy queries keep working on the real schema */
 const ALIASES: Record<string, string[]> = {
   contacts: [`kind AS type`, `CASE WHEN is_active=1 THEN 'active' ELSE 'inactive' END AS status`],
@@ -44,14 +55,21 @@ export function initDatabase(): Promise<void> {
       db = await getSqlite();
       runMigrations(db);
       seedDemoData(db);
-      // self-heal password hashes even when users table was already seeded
+      // self-heal: ensure the default admin can ALWAYS log in (SR-AUTH robustness)
       try {
+        const admin = db.get<any>(`SELECT id, username, password_hash FROM users WHERE username='admin'`);
+        if (!admin) {
+          db.insert('users', { username: 'admin', password_hash: hashPassword('admin123'), full_name: 'مدیر سیستم', role: 'manager', is_active: 1, created_at: new Date().toISOString().replace('T', ' ').slice(0, 19) });
+        } else if (!verifyPassword('admin123', String(admin.password_hash ?? ''))) {
+          db.update('users', admin.id, { password_hash: hashPassword('admin123'), is_active: 1 });
+        }
+        // rehash any legacy/plaintext hashes for other demo users
         const allUsers = db.all<any>(`SELECT id, username, password_hash FROM users`);
         for (const ur of allUsers) {
           const h = String(ur.password_hash ?? '');
-          if (!h.startsWith('v2:')) {
-            const pw = ur.username === 'admin' ? 'admin123' : '1234';
-            db.update('users', ur.id, { password_hash: hashPassword(pw) });
+          if (!h.startsWith('v2:') && ur.username !== 'admin') {
+            const pw = ur.username === 'inactive' ? '1234' : ['finance', 'accountant', 'sales', 'purchase', 'warehouse', 'viewer'].includes(String(ur.username)) ? '1234' : '1234';
+            if (!verifyPassword(pw, h)) db.update('users', ur.id, { password_hash: hashPassword(pw) });
           }
         }
       } catch { /* ignore */ }
@@ -60,8 +78,10 @@ export function initDatabase(): Promise<void> {
     } catch (e) {
       // a corrupt saved database must never lock the user out — rebuild from scratch
       console.error('DB init failed, rebuilding fresh database:', e);
+      emitDbError('پایگاه داده قبلی قابل بازیابی نبود؛ نسخه تازه با داده نمونه ساخته شد.');
       try { localStorage.removeItem('sarmad_sqlite_db'); } catch { /* ignore */ }
       resetSqliteInstance();
+      db = null;
       db = await getSqlite();
       runMigrations(db);
       seedDemoData(db);

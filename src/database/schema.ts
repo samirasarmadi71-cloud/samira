@@ -149,7 +149,7 @@ const TABLES = [
   `CREATE TABLE IF NOT EXISTS inventory_document_lines (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     doc_id INTEGER REFERENCES inventory_documents(id),
-    item_id INTEGER REFERENCES items(id), item_name TEXT, qty REAL, unit_price REAL, unit TEXT
+    item_id INTEGER REFERENCES items(id), item_name TEXT, qty REAL, quantity REAL, amount REAL DEFAULT 0, line_total REAL DEFAULT 0, total REAL DEFAULT 0, unit_price REAL, unit TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS inventory_movements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Calculator, Database, Eye, EyeOff, Lock, User, AlertCircle, ShieldCheck,
   WifiOff, Zap, TrendingUp, Package, Landmark, BookOpenCheck, Clock3, CalendarDays,
-  CheckCircle2, Printer, FileSpreadsheet, PieChart, ChevronLeft,
+  CheckCircle2, Printer, FileSpreadsheet, ChevronLeft, Wrench,
 } from 'lucide-react';
 import { initDatabase, execQuery, runQuery, verifyPassword, hashPassword } from '../database/db';
 import { toJalali, toPersianNumber } from '../utils/persianDate';
@@ -34,6 +34,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [attempts, setAttempts] = useState(0);
   const [lockUntil, setLockUntil] = useState<number>(0);
   const [loginOk, setLoginOk] = useState(false);
+  const [bootKey, setBootKey] = useState(0);
 
   // rate-limit persistence (SR-AUTH-008)
   useEffect(() => {
@@ -56,9 +57,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     try { localStorage.setItem('sarmad_login_guard', JSON.stringify({ attempts: a, lockUntil: lock })); } catch { /* ignore */ }
   };
 
-  // boot the SQLite engine once — never let a failure trap the user
+  // boot the SQLite engine — never let a failure trap the user
   useEffect(() => {
     let alive = true;
+    setLoading(true);
+    setReadyError('');
     (async () => {
       try {
         await initDatabase();
@@ -67,13 +70,16 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       } catch (e) {
         console.error(e);
         if (!alive) return;
-        setReadyError('خطا در راه‌اندازی پایگاه داده. لطفاً صفحه را تازه‌سازی کنید.');
+        setReadyError('خطا در راه‌اندازی پایگاه داده. روی «تلاش مجدد» کلیک کنید.');
       } finally {
         if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [bootKey]);
+
+  // hard guard: even if the engine somehow fails to boot, admin/admin123 must always get in
+  const FALLBACK_ADMIN = { id: 1, username: 'admin', fullName: 'مدیر سیستم', role: 'manager' };
 
   // ---- live clock (Tehran wall-clock, Jalali date) ----
   const now = useNow(1000);
@@ -128,7 +134,33 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     }
     setLoading(true);
     try {
-      await initDatabase();
+      // make sure the engine is up; retry once transparently if it failed before
+      let dbOk = true;
+      try {
+        await initDatabase();
+      } catch {
+        try {
+          await new Promise(r => setTimeout(r, 300));
+          await initDatabase();
+        } catch {
+          dbOk = false;
+        }
+      }
+
+      // ---- absolute safety valve: DB down but admin credentials correct → let them in ----
+      if (!dbOk) {
+        setDbReady(false);
+        if (username.trim() === 'admin' && password === 'admin123') {
+          try { localStorage.removeItem('sarmad_login_guard'); } catch { /* ignore */ }
+          localStorage.setItem('sarmad_session_time', Date.now().toString());
+          setAttempts(0);
+          setLoginOk(true);
+          setTimeout(() => onLogin(FALLBACK_ADMIN), 750);
+          return;
+        }
+        setError('پایگاه داده در دسترس نیست. با حساب مدیر (admin/admin123) وارد شوید و از بخش تنظیمات «تعمیق پایگاه داده» را اجرا کنید.');
+        return;
+      }
       setDbReady(true);
 
       const users = execQuery(`SELECT * FROM users WHERE username = ?`, [username.trim()]);
@@ -174,15 +206,24 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       }, 750);
     } catch (e) {
       console.error(e);
-      setError('خطای غیرمنتظره در اتصال به پایگاه داده. دوباره تلاش کنید.');
+      setError('خطا در برقراری اتصال به پایگاه داده. کمی صبر کرده و دوباره تلاش کنید؛ در صورت تکرار از دکمه «تعمیق و شروع مجدد» استفاده نمایید.');
     } finally {
       setLoading(false);
     }
   };
 
+  // full local recovery: wipe saved DB and rebuild fresh (admin/admin123 always restored)
+  const hardReset = () => {
+    if (!window.confirm('همه داده‌های محلی پاک شده و پایگاه داده از نو ساخته می‌شود. ادامه می‌دهید؟')) return;
+    try { localStorage.removeItem('sarmad_sqlite_db'); localStorage.removeItem('sarmad_db'); } catch { /* ignore */ }
+    setReadyError('');
+    setError('');
+    setBootKey(k => k + 1);
+  };
+
   const quickFill = (u: string, p: string) => { setUsername(u); setPassword(p); setError(''); };
 
-  const fieldCls = 'w-full h-14 rounded-2xl bg-slate-50 border-2 border-slate-200 pr-14 pl-12 text-[15px] font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100';
+  const fieldCls = 'w-full h-14 rounded-2xl bg-slate-50 border-2 border-slate-200 pr-14 pl-12 text-[16px] font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100';
 
   return (
     <div dir="rtl" className="min-h-screen w-full relative overflow-hidden flex items-center justify-center p-4 md:p-8"
@@ -198,27 +239,27 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '26px 26px' }}></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-6 items-stretch">
+      <div className="relative z-10 w-full max-w-[1240px] grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-6 items-stretch">
 
-        {/* ================= RIGHT PANEL — brand / info / clock ================= */}
-        <div className="hidden lg:flex flex-col justify-between text-white rounded-[2rem] p-10 border border-white/15 backdrop-blur-sm"
+        {/* ================= RIGHT PANEL — brand / info / clock (mobile: compact header) ================= */}
+        <div className="flex flex-col text-white rounded-[2rem] p-5 sm:p-7 lg:p-10 border border-white/15 backdrop-blur-sm"
           style={{ background: 'linear-gradient(160deg, rgba(30,58,138,.55), rgba(11,31,75,.75))' }}>
 
           {/* logo */}
-          <div className="flex items-center gap-5">
-            <div className="relative">
+          <div className="flex items-center gap-4 lg:gap-5">
+            <div className="relative shrink-0">
               <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-orange-400 via-amber-300 to-orange-500 blur-md opacity-60 animate-pulse"></div>
-              <div className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl"
+              <div className="relative w-16 h-16 lg:w-24 lg:h-24 rounded-full flex items-center justify-center shadow-2xl"
                 style={{ background: 'conic-gradient(from 210deg, #f97316, #fb923c, #fdba74, #f97316)' }}>
-                <div className="w-[76px] h-[76px] rounded-full bg-[#0b1f4b] flex items-center justify-center border-4 border-white/90">
-                  <Calculator size={34} className="text-orange-400" />
+                <div className="w-[52px] h-[52px] lg:w-[76px] lg:h-[76px] rounded-full bg-[#0b1f4b] flex items-center justify-center border-2 lg:border-4 border-white/90">
+                  <Calculator size={24} className="lg:size-[34px] text-orange-400" />
                 </div>
               </div>
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tight">سَرمد</h1>
-              <p className="text-blue-200 text-sm mt-1">سیستم حسابداری، امور مالی و انبارداری</p>
-              <div className="flex gap-2 mt-3">
+              <h1 className="text-2xl lg:text-4xl font-black tracking-tight">سَرمد</h1>
+              <p className="text-blue-200 text-xs lg:text-base mt-1">سیستم حسابداری، امور مالی و انبارداری</p>
+              <div className="hidden lg:flex gap-2 mt-3 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/15 border border-emerald-300/30 text-emerald-200 text-xs font-bold">
                   <WifiOff size={12} /> کاملاً آفلاین
                 </span>
@@ -233,25 +274,25 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           </div>
 
           {/* live clock card */}
-          <div className="my-8 rounded-3xl border border-white/15 p-6 flex items-center justify-between gap-6"
+          <div className="mt-4 lg:my-7 rounded-3xl border border-white/15 p-4 lg:p-6 flex items-center justify-between gap-4"
             style={{ background: 'linear-gradient(120deg, rgba(249,115,22,.16), rgba(59,130,246,.14))' }}>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center">
+            <div className="flex items-center gap-3 lg:gap-4">
+              <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-white/10 border border-white/20 items-center justify-center">
                 <Clock3 size={26} className="text-orange-300" />
               </div>
               <div>
-                <div className="text-4xl font-black tabular-nums tracking-wide" style={{ textShadow: '0 2px 12px rgba(249,115,22,.35)' }}>{toPersianNumber(clock.time)}</div>
-                <div className="text-blue-200 text-sm mt-1">{clock.dateLong}</div>
+                <div className="text-2xl lg:text-4xl font-black tabular-nums tracking-wide" style={{ textShadow: '0 2px 12px rgba(249,115,22,.35)' }}>{toPersianNumber(clock.time)}</div>
+                <div className="text-blue-200 text-xs lg:text-sm mt-1">{clock.dateLong}</div>
               </div>
             </div>
             <div className="text-left">
               <div className="flex items-center gap-2 text-blue-200 text-xs mb-1"><CalendarDays size={14} /> تاریخ امروز</div>
-              <div className="text-2xl font-extrabold text-white tabular-nums">{clock.dateNum}</div>
+              <div className="text-lg lg:text-2xl font-extrabold text-white tabular-nums">{clock.dateNum}</div>
             </div>
           </div>
 
-          {/* feature bullets */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+          {/* feature bullets — desktop only */}
+          <div className="hidden lg:grid grid-cols-2 gap-x-6 gap-y-4 mt-2">
             {[
               { icon: <BookOpenCheck size={18} />, t: 'اسناد حسابداری متوازن', d: 'ثبت خودکار بدهکار و بستانکار' },
               { icon: <Package size={18} />, t: 'انبار هوشمند', d: 'رسید، حواله، انتقال و کارتکس' },
@@ -261,21 +302,21 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               { icon: <Printer size={18} />, t: 'چاپ فارسی راست‌چین', d: 'سربرگ شرکت روی همه اسناد' },
             ].map((f, i) => (
               <div key={i} className="flex items-start gap-3">
-                <div className="mt-0.5 w-9 h-9 shrink-0 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400/90 to-orange-600/90 text-white shadow-lg shadow-orange-900/30">{f.icon}</div>
+                <div className="mt-0.5 w-10 h-10 shrink-0 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400/90 to-orange-600/90 text-white shadow-lg shadow-orange-900/30">{f.icon}</div>
                 <div>
-                  <div className="text-sm font-bold text-white">{f.t}</div>
-                  <div className="text-xs text-blue-200/80 mt-0.5 leading-5">{f.d}</div>
+                  <div className="text-[15px] font-bold text-white">{f.t}</div>
+                  <div className="text-[13px] text-blue-200/80 mt-0.5 leading-6">{f.d}</div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* footer credit */}
-          <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+          <div className="pt-4 mt-4 lg:pt-5 lg:mt-6 border-t border-white/10 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 text-blue-200 text-xs">
               <Zap size={13} className="text-orange-300" /> اجرای محلی بدون نیاز به اینترنت
             </div>
-            <div className="text-sm font-extrabold text-white">
+            <div className="text-sm lg:text-base font-extrabold text-white">
               طراحی و توسعه: <span className="text-orange-300">سمیرا سرمد</span>
             </div>
           </div>
@@ -283,25 +324,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* ================= LEFT PANEL — login form ================= */}
         <div className="bg-white rounded-[2rem] shadow-2xl shadow-black/40 border border-white/60 p-7 sm:p-10 flex flex-col justify-center min-h-[560px]">
-
-          {/* mobile logo row */}
-          <div className="lg:hidden flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'conic-gradient(from 210deg, #f97316, #fdba74, #f97316)' }}>
-                <div className="w-11 h-11 rounded-full bg-[#0b1f4b] flex items-center justify-center border-2 border-white">
-                  <Calculator size={20} className="text-orange-400" />
-                </div>
-              </div>
-              <div>
-                <div className="text-xl font-black text-[#0b1f4b]">سَرمد</div>
-                <div className="text-[11px] text-slate-500">حسابداری، امور مالی و انبارداری</div>
-              </div>
-            </div>
-            <div className="text-left">
-              <div className="text-lg font-black text-[#0b1f4b] tabular-nums">{toPersianNumber(clock.time)}</div>
-              <div className="text-[11px] text-slate-500">{clock.dateNum}</div>
-            </div>
-          </div>
 
           <div className="flex items-center gap-3 mb-1">
             <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-900/20" style={{ background: 'linear-gradient(135deg,#1e3a8a,#0b1f4b)' }}>
@@ -314,8 +336,12 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           </div>
 
           {/* status line */}
-          <div className="flex items-center gap-2 mt-4 mb-5 text-xs">
-            {loading && !dbReady ? (
+          <div className="flex items-center gap-2 mt-4 mb-5 text-xs flex-wrap">
+            {readyError ? (
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-bold">
+                <AlertCircle size={14} /> {readyError}
+              </span>
+            ) : loading && !dbReady ? (
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">
                 <span className="w-3.5 h-3.5 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin"></span>
                 در حال آماده‌سازی پایگاه داده SQLite…
@@ -324,10 +350,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
                 <CheckCircle2 size={14} /> پایگاه داده آماده و سالم است
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-bold">
-                <AlertCircle size={14} /> {readyError || 'پایگاه داده آماده نیست'}
-              </span>
+            ) : null}
+            {(readyError || !dbReady) && !loading && (
+              <button onClick={() => setBootKey(k => k + 1)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-bold hover:bg-orange-100 transition-colors">
+                تلاش مجدد
+              </button>
             )}
           </div>
 
@@ -379,7 +406,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                   placeholder="رمز عبور خود را وارد کنید"
-                  className={fieldCls}
+                  className={`${fieldCls} pl-12`}
                 />
                 <button type="button" onClick={() => setShowPassword(v => !v)}
                   className="absolute left-1 top-0 h-14 w-12 flex items-center justify-center rounded-xl text-slate-400 hover:text-orange-500 transition-colors">
@@ -388,7 +415,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               </div>
 
               {attempts > 0 && lockRemain === 0 && (
-                <div className="text-[11px] text-slate-400 mb-3">
+                <div className="text-xs text-slate-400 mb-3">
                   {toPersianNumber(attempts)} تلاش ناموفق — پس از ۵ تلاش، ورود ۶۰ ثانیه قفل می‌شود
                 </div>
               )}
@@ -396,7 +423,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               {/* submit */}
               <button
                 onClick={handleLogin}
-                disabled={loading || !dbReady || lockRemain > 0}
+                disabled={loading || lockRemain > 0 || (!!readyError && !dbReady)}
                 className="mt-4 w-full h-14 rounded-2xl text-white text-base font-black flex items-center justify-center gap-2 shadow-xl shadow-orange-600/30 transition-all active:scale-[.98] disabled:opacity-60 disabled:cursor-not-allowed group"
                 style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 55%, #c2410c 100%)' }}
               >
@@ -418,7 +445,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               <div className="mt-6 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-black text-slate-600">حساب‌های نمونه — کلیک کنید تا پر شود</span>
-                  <PieChart size={15} className="text-orange-400" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
@@ -431,18 +457,25 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                       className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 transition-all text-right">
                       <div>
                         <div className="text-xs font-bold text-[#0b1f4b]">{a.label}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">{a.u} / {a.p}</div>
+                        <div className="text-xs text-slate-400 font-mono">{a.u} / {a.p}</div>
                       </div>
-                      <div className="w-7 h-7 rounded-full bg-blue-900 text-white text-[10px] font-black flex items-center justify-center shrink-0">{a.u[0].toUpperCase()}</div>
+                      <div className="w-7 h-7 rounded-full bg-blue-900 text-white text-xs font-black flex items-center justify-center shrink-0">{a.u[0].toUpperCase()}</div>
                     </button>
                   ))}
                 </div>
               </div>
+
+              {/* recovery */}
+              <button onClick={hardReset}
+                className="mt-4 inline-flex items-center justify-center gap-2 self-center px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-orange-600 hover:bg-orange-50 border border-transparent hover:border-orange-200 transition-all">
+                <Wrench size={14} />
+                تعمیق و شروع مجدد پایگاه داده (در صورت خطای مداوم)
+              </button>
             </>
           )}
 
           {/* footer */}
-          <div className="mt-7 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
             <span>نسخه ۱.۰.۰ • SQLite • اجرای محلی و آفلاین</span>
             <span className="font-bold text-slate-500">طراح: <span className="text-orange-500">سمیرا سرمد</span></span>
           </div>

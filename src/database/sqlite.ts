@@ -1,9 +1,29 @@
 // ============ Real SQLite database (sql.js) with localStorage persistence ============
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+// asm.js build is used on purpose: it needs no .wasm fetch, so the app runs fully offline
+// from file:// or any static host without MIME/CORS problems.
+import initSqlJsRaw from 'sql.js/dist/sql-asm-memory-growth.js';
+import type { Database as SqlJsDatabase } from 'sql.js';
+
+/** sql.js ships only CommonJS typings — normalize the ESM default-import shape */
+const initSqlJs: (config?: any) => Promise<{ Database: new (data?: Uint8Array | null) => any }> =
+  initSqlJsRaw as any;
+
+type SqlJsModule = { Database: new (data?: Uint8Array | null) => SqlJsDatabase };
 
 export interface QueryResult<T = any> {
   columns: string[];
   values: T[][];
+}
+
+/** quota-tolerant persistence: localStorage first, in-memory fallback second */
+function persist(key: string, value: string): boolean {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.warn('localStorage persist failed (quota?) — keeping data in memory only', e);
+    return false;
+  }
 }
 
 export class SqliteDatabase {
@@ -13,17 +33,27 @@ export class SqliteDatabase {
   async init(): Promise<void> {
     if (this.db) return;
     const SQL = await initSqlJs();
-    const saved = localStorage.getItem(this.storageKey);
+    (this as any)._SQL = SQL;
+    // legacy storage key from older builds — migrate once if present
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(this.storageKey);
+      if (!saved) {
+        const legacy = localStorage.getItem('sarmad_db');
+        if (legacy) { saved = legacy; localStorage.setItem(this.storageKey, legacy); }
+      }
+    } catch { /* ignore */ }
     if (saved) {
       try {
         this.db = new SQL.Database(Uint8Array.from(atob(saved), c => c.charCodeAt(0)));
       } catch {
+        console.warn('Saved database was corrupt — starting fresh');
         this.db = new SQL.Database();
       }
     } else {
       this.db = new SQL.Database();
     }
-    this.db.run('PRAGMA foreign_keys = ON;');
+    this.getDb().run('PRAGMA foreign_keys = ON;');
   }
 
   private getDb(): SqlJsDatabase {
@@ -98,7 +128,7 @@ export class SqliteDatabase {
       const data = this.getDb().export();
       let binary = '';
       data.forEach(b => (binary += String.fromCharCode(b)));
-      localStorage.setItem(this.storageKey, btoa(binary));
+      persist(this.storageKey, btoa(binary));
     } catch (e) {
       console.error('DB persist failed:', e);
     }
@@ -123,16 +153,14 @@ export class SqliteDatabase {
   restoreBase64(b64: string): boolean {
     try {
       const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-      // validate by opening
-      const test = new (this.constructor as any);
-      void test;
-      const SQL = (this as any).SQL || null;
-      void SQL;
-      // Re-open using stored SQL module reference
+      // Re-open using stored SQL module reference (set during init)
       const sql = (this as any)._SQL;
       if (!sql) return false;
       const newDb = new sql.Database(bytes);
-      newDb.run('PRAGMA integrity_check;');
+      const ic = newDb.exec('PRAGMA integrity_check');
+      const ok = ic[0]?.values?.[0]?.[0] === 'ok';
+      if (!ok) { try { newDb.close(); } catch { /* ignore */ } return false; }
+      newDb.run('PRAGMA foreign_keys = ON;');
       this.db = newDb;
       this.save();
       return true;

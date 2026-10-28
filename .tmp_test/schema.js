@@ -1,0 +1,507 @@
+export const SCHEMA_VERSION = 2;
+/** deterministic hash used for stored credentials */
+function legacyHash(pw) {
+    let h = 5381;
+    const s = 'sarmad$' + pw;
+    for (let i = 0; i < s.length; i++)
+        h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    return 'h' + h.toString(16) + s.length.toString(16);
+}
+/** stronger offline hash (FNV-1a 64-bit style, two rounds) */
+function strongHash(s) {
+    let h1 = 0xcbf29ce484222325;
+    let h2 = 0x84222325cbf29ce4;
+    for (let i = 0; i < s.length; i++) {
+        const c = s.charCodeAt(i);
+        h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+        h2 = Math.imul((h2 + c) ^ (h1 >>> 7), 0x85ebca6b) >>> 0;
+    }
+    return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+}
+/** canonical password hash format used from v2 onward */
+export function makePasswordHash(pw) {
+    return 'v2:' + strongHash('sarmad::' + pw + '::salt');
+}
+/** verify a password against a stored hash — accepts all historical formats */
+export function verifyPassword(pw, stored) {
+    if (!pw || !stored)
+        return false;
+    const t = String(stored).trim();
+    if (t.startsWith('v2:'))
+        return ('v2:' + strongHash('sarmad::' + pw + '::salt')) === t;
+    if (t.startsWith('v1:')) {
+        try {
+            return btoa(unescape(encodeURIComponent('srm@' + pw))) === t.slice(3);
+        }
+        catch {
+            return false;
+        }
+    }
+    if (/^h[0-9a-f]+$/.test(t))
+        return legacyHash(pw) === t;
+    // plaintext fallback (rows created outside the app)
+    return t === pw;
+}
+const TABLES = [
+    `CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    full_name TEXT, email TEXT, phone TEXT,
+    role TEXT DEFAULT 'viewer', is_active INTEGER DEFAULT 1, last_login TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS company_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT, brand TEXT, economic_code TEXT, national_id TEXT,
+    registration_no TEXT, address TEXT, city TEXT, phone TEXT, email TEXT,
+    website TEXT, logo TEXT, header_note TEXT, fiscal_symbol TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS app_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    currency TEXT DEFAULT 'ریال', decimals INTEGER DEFAULT 0,
+    date_format TEXT DEFAULT 'jalali', session_minutes INTEGER DEFAULT 60,
+    negative_stock_allowed INTEGER DEFAULT 0, valuation_method TEXT DEFAULT 'weighted_avg',
+    auto_confirm_docs INTEGER DEFAULT 0, tax_rate REAL DEFAULT 9, theme TEXT DEFAULT 'navy-orange'
+  )`,
+    `CREATE TABLE IF NOT EXISTS number_sequences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_type TEXT UNIQUE, prefix TEXT, current_no INTEGER DEFAULT 1000, padding INTEGER DEFAULT 4
+  )`,
+    `CREATE TABLE IF NOT EXISTS fiscal_years (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE, start_date TEXT, end_date TEXT, status TEXT DEFAULT 'فعال'
+  )`,
+    `CREATE TABLE IF NOT EXISTS accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE, title TEXT NOT NULL, type TEXT,
+    parent_code TEXT, parent_id INTEGER, level INTEGER DEFAULT 1, nature TEXT DEFAULT 'debit',
+    is_active INTEGER DEFAULT 1, is_group INTEGER DEFAULT 0
+  )`,
+    `CREATE TABLE IF NOT EXISTS item_groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE, name TEXT NOT NULL
+  )`,
+    `CREATE TABLE IF NOT EXISTS units (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, short_name TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS warehouses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE, name TEXT NOT NULL, manager TEXT, address TEXT, is_active INTEGER DEFAULT 1
+  )`,
+    `CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE, name TEXT NOT NULL, group_id INTEGER, unit_id INTEGER,
+    kind TEXT DEFAULT 'goods', buy_price REAL DEFAULT 0, sell_price REAL DEFAULT 0,
+    min_stock REAL DEFAULT 0, avg_cost REAL DEFAULT 0, price REAL DEFAULT 0, is_active INTEGER DEFAULT 1
+  )`,
+    `CREATE TABLE IF NOT EXISTS contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE, name TEXT NOT NULL, kind TEXT DEFAULT 'customer',
+    person_type TEXT DEFAULT 'حقوقی', company_code TEXT, national_id TEXT,
+    phone TEXT, mobile TEXT, email TEXT, city TEXT, address TEXT,
+    credit_limit REAL DEFAULT 0, opening_balance REAL DEFAULT 0,
+    is_active INTEGER DEFAULT 1, note TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS payment_methods (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, kind TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS cash_accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE, name TEXT NOT NULL, kind TEXT DEFAULT 'cash',
+    bank_name TEXT, card_no TEXT, account_no TEXT, opening_balance REAL DEFAULT 0, is_active INTEGER DEFAULT 1
+  )`,
+    `CREATE TABLE IF NOT EXISTS sales_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number TEXT UNIQUE, doc_number TEXT, date TEXT, doc_date TEXT, invoice_date TEXT, contact_id INTEGER, warehouse_id INTEGER,
+    lines_total REAL DEFAULT 0, subtotal REAL DEFAULT 0, discount REAL DEFAULT 0, tax REAL DEFAULT 0,
+    final_total REAL DEFAULT 0, total REAL DEFAULT 0, grand_total REAL DEFAULT 0,
+    paid_amount REAL DEFAULT 0, balance REAL DEFAULT 0,
+    status TEXT DEFAULT 'draft', kind TEXT DEFAULT 'invoice',
+    payment_type TEXT DEFAULT 'credit', note TEXT, description TEXT, source_doc TEXT, source_type TEXT, source_id TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS sales_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_id INTEGER REFERENCES sales_documents(id),
+    item_id INTEGER REFERENCES items(id), item_name TEXT, qty REAL, quantity REAL, unit TEXT,
+    unit_price REAL, cost_price REAL DEFAULT 0, discount REAL DEFAULT 0, line_total REAL, total REAL
+  )`,
+    `CREATE TABLE IF NOT EXISTS purchase_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number TEXT UNIQUE, doc_number TEXT, date TEXT, doc_date TEXT, invoice_date TEXT, contact_id INTEGER, warehouse_id INTEGER,
+    lines_total REAL DEFAULT 0, subtotal REAL DEFAULT 0, discount REAL DEFAULT 0, tax REAL DEFAULT 0,
+    final_total REAL DEFAULT 0, total REAL DEFAULT 0, grand_total REAL DEFAULT 0,
+    paid_amount REAL DEFAULT 0, balance REAL DEFAULT 0,
+    status TEXT DEFAULT 'draft', kind TEXT DEFAULT 'invoice', note TEXT, description TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS purchase_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_id INTEGER REFERENCES purchase_documents(id),
+    item_id INTEGER REFERENCES items(id), item_name TEXT, qty REAL, quantity REAL, unit TEXT,
+    unit_price REAL, discount REAL DEFAULT 0, line_total REAL, total REAL
+  )`,
+    `CREATE TABLE IF NOT EXISTS inventory_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number TEXT UNIQUE, date TEXT, kind TEXT, warehouse_id INTEGER, to_warehouse_id INTEGER,
+    contact_id INTEGER, ref_doc TEXT, status TEXT DEFAULT 'final', note TEXT, reason TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS inventory_document_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_id INTEGER REFERENCES inventory_documents(id),
+    item_id INTEGER REFERENCES items(id), item_name TEXT, qty REAL, unit_price REAL, unit TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS inventory_movements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT, item_id INTEGER, warehouse_id INTEGER, direction TEXT,
+    qty REAL, unit_price REAL, source TEXT, ref_number TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS treasury_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number TEXT UNIQUE, date TEXT, kind TEXT, account_id INTEGER, to_account_id INTEGER,
+    amount REAL, contact_id INTEGER, method TEXT, check_id INTEGER,
+    invoice_ref TEXT, description TEXT, status TEXT DEFAULT 'final',
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS checks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number TEXT, amount REAL, bank_name TEXT, branch TEXT, drawer TEXT, payee TEXT,
+    issue_date TEXT, due_date TEXT, kind TEXT, status TEXT DEFAULT 'received',
+    contact_id INTEGER, account_id INTEGER, note TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS check_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    check_id INTEGER REFERENCES checks(id), event_date TEXT, from_status TEXT, to_status TEXT, note TEXT, user_name TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS accounting_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number TEXT UNIQUE, date TEXT, fiscal_year TEXT, description TEXT,
+    kind TEXT DEFAULT 'manual', source_ref TEXT, narrative TEXT, source_type TEXT, source_id TEXT,
+    status TEXT DEFAULT 'draft', debit_total REAL DEFAULT 0, credit_total REAL DEFAULT 0,
+    total_debit REAL DEFAULT 0, total_credit REAL DEFAULT 0, closed_period TEXT,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  )`,
+    `CREATE TABLE IF NOT EXISTS accounting_document_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_id INTEGER REFERENCES accounting_documents(id),
+    account_code TEXT, account_title TEXT, debit REAL DEFAULT 0, credit REAL DEFAULT 0, note TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    at TEXT DEFAULT (datetime('now','localtime')),
+    user_name TEXT, action TEXT, entity TEXT, record_id TEXT, details TEXT, result TEXT
+  )`,
+    `CREATE TABLE IF NOT EXISTS backup_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    at TEXT DEFAULT (datetime('now','localtime')),
+    kind TEXT, path TEXT, size_kb REAL, result TEXT
+  )`,
+];
+/** add a column to a table only if it does not exist yet (idempotent migration) */
+function ensureColumn(db, table, col, def) {
+    try {
+        const cols = db.all(`PRAGMA table_info(${table})`);
+        if (cols.length === 0)
+            return; // table missing entirely — CREATE TABLE handles it
+        if (!cols.some((c) => String(c.name) === col)) {
+            db.run(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`);
+        }
+    }
+    catch (e) {
+        console.warn(`migration: could not ensure column ${table}.${col}`, e);
+    }
+}
+export function runMigrations(db) {
+    db.transaction(() => {
+        for (const sql of TABLES)
+            db.run(sql);
+        // ---- v2 compatibility columns (older saved databases may lack them) ----
+        ensureColumn(db, 'audit_logs', 'created_at', 'TEXT');
+        ensureColumn(db, 'audit_logs', 'username', 'TEXT');
+        ensureColumn(db, 'audit_logs', 'user_id', 'INTEGER');
+        ensureColumn(db, 'audit_logs', 'table_name', 'TEXT');
+        ensureColumn(db, 'contacts', 'type', "TEXT DEFAULT 'customer'");
+        ensureColumn(db, 'contacts', 'status', "TEXT DEFAULT 'active'");
+        ensureColumn(db, 'items', 'price', 'REAL DEFAULT 0');
+        ensureColumn(db, 'accounting_documents', 'narrative', 'TEXT');
+        ensureColumn(db, 'accounting_documents', 'debit_total', 'REAL DEFAULT 0');
+        ensureColumn(db, 'accounting_documents', 'credit_total', 'REAL DEFAULT 0');
+        ensureColumn(db, 'sales_documents', 'total', 'REAL DEFAULT 0');
+        ensureColumn(db, 'sales_documents', 'grand_total', 'REAL DEFAULT 0');
+        ensureColumn(db, 'sales_documents', 'doc_number', 'TEXT');
+        ensureColumn(db, 'purchase_documents', 'total', 'REAL DEFAULT 0');
+        ensureColumn(db, 'purchase_documents', 'grand_total', 'REAL DEFAULT 0');
+        ensureColumn(db, 'purchase_documents', 'doc_number', 'TEXT');
+        // back-fill audit_logs.created_at from `at` so ORDER BY created_at works everywhere
+        try {
+            db.run(`UPDATE audit_logs SET created_at = at WHERE created_at IS NULL AND at IS NOT NULL`);
+        }
+        catch { /* ignore */ }
+        db.run(`CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now','localtime')))`);
+        db.run(`INSERT OR IGNORE INTO schema_migrations (version) VALUES (?)`, [SCHEMA_VERSION]);
+    });
+}
+// deterministic offline password hash (canonical v2 format)
+export function hashPassword(pw) {
+    return makePasswordHash(pw);
+}
+const P = (n) => n; // readability
+const datetime2 = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
+export function seedDemoData(db) {
+    if (db.count('users') > 0)
+        return;
+    db.transaction(() => {
+        // ---- users ----
+        const users = [
+            ['admin', 'مدیر سیستم', 'admin@sarmad.ir', '021-88000000', 'manager'],
+            ['finance', 'فاطمه رضایی', 'finance@sarmad.ir', '021-88000001', 'finance_manager'],
+            ['accountant', 'علی محمدی', 'acc@sarmad.ir', '021-88000002', 'accountant'],
+            ['sales', 'مریم حسینی', 'sales@sarmad.ir', '021-88000003', 'sales_user'],
+            ['purchase', 'رضا کریمی', 'buy@sarmad.ir', '021-88000004', 'purchase_user'],
+            ['warehouse', 'حسن جعفری', 'wh@sarmad.ir', '021-88000005', 'warehouseman'],
+            ['viewer', 'ناظر سیستم', 'view@sarmad.ir', '', 'viewer'],
+            ['inactive', 'کاربر غیرفعال', 'off@sarmad.ir', '', 'viewer'],
+        ];
+        users.forEach(([u, fn, em, ph, r]) => {
+            const pw = u === 'admin' ? 'admin123' : '1234';
+            db.insert('users', { username: u, password_hash: hashPassword(pw), full_name: fn, email: em, phone: ph, role: r, is_active: u === 'inactive' ? 0 : 1, created_at: '2026-01-10 08:00' });
+        });
+        // ---- self-heal: rehash any legacy/plaintext password rows from older saved DBs ----
+        try {
+            const allUsers = db.all(`SELECT id, username, password_hash FROM users`);
+            for (const ur of allUsers) {
+                const h = String(ur.password_hash ?? '');
+                if (!h.startsWith('v2:')) {
+                    // canonical demo credentials — reset to a proper v2 hash so login always works
+                    const pw = ur.username === 'admin' ? 'admin123' : '1234';
+                    db.update('users', ur.id, { password_hash: hashPassword(pw) });
+                }
+            }
+        }
+        catch { /* ignore */ }
+        // ---- settings ----
+        db.insert('company_settings', {
+            name: 'شرکت بازرسی سرمد پارس', brand: 'سَرمد', economic_code: '14005566778', national_id: '10101234567',
+            registration_no: '۱۲۳۴۵', address: 'تهران، خیابان ولیعصر، بالاتر از پارک وی، پلاک ۱۲۰', city: 'تهران',
+            phone: '021-88776655', email: 'info@sarmad.ir', website: 'sarmad.local', header_note: 'تمامی قیمت‌ها به ریال می‌باشد.', fiscal_symbol: '۱۴۰۵',
+        });
+        db.insert('app_settings', { currency: 'ریال', decimals: 0, date_format: 'jalali', session_minutes: 60, negative_stock_allowed: 0, valuation_method: 'weighted_avg', auto_confirm_docs: 0, tax_rate: 9, theme: 'navy-orange' });
+        [['invoice_sale', 'INV', 2000], ['invoice_purchase', 'PUR', 1000], ['accounting', 'ACC', 3000], ['receipt', 'RCT', 4000], ['payment', 'PMT', 4100], ['check', 'CHK', 5000], ['inv_in', 'IN', 6000], ['inv_out', 'OUT', 6100]].forEach(([t, pr, c]) => db.insert('number_sequences', { doc_type: t, prefix: pr, current_no: c, padding: 4 }));
+        db.insert('fiscal_years', { name: '۱۴۰۵', start_date: '1405-01-01', end_date: '1405-12-29', status: 'فعال' });
+        db.insert('fiscal_years', { name: '۱۴۰۴', start_date: '1404-01-01', end_date: '1404-12-29', status: 'بسته' });
+        // ---- chart of accounts (complete coding) ----
+        const accRows = [
+            // دارایی‌ها
+            ['1100', 'دارایی‌های جاری', 'دارایی', null, 1, 1],
+            ['1110', 'نقد و بانک', 'دارایی', '1100', 2, 0],
+            ['1111', 'صندوق نقدی', 'دارایی', '1110', 3, 0],
+            ['1112', 'بانک ملت', 'دارایی', '1110', 3, 0],
+            ['1113', 'بانک ملی', 'دارایی', '1110', 3, 0],
+            ['1120', 'حساب‌های دریافتنی', 'دارایی', '1100', 2, 0],
+            ['1121', 'مطالبات از مشتریان', 'دارایی', '1120', 3, 0],
+            ['1122', 'چک‌های وصول‌نشده', 'دارایی', '1120', 3, 0],
+            ['1130', 'موجودی مواد و کالا', 'دارایی', '1100', 2, 0],
+            ['1131', 'موجودی کالای انبار مرکزی', 'دارایی', '1130', 3, 0],
+            ['1132', 'موجودی کالای انبار شرق', 'دارایی', '1130', 3, 0],
+            ['1140', 'پیش‌پرداخت‌ها', 'دارایی', '1100', 2, 0],
+            ['1200', 'دارایی‌های ثابت', 'دارایی', null, 1, 1],
+            ['1210', 'تجهیزات', 'دارایی', '1200', 2, 0],
+            ['1211', 'اثاثیه اداری', 'دارایی', '1210', 3, 0],
+            ['1220', 'ساختمان', 'دارایی', '1200', 2, 0],
+            ['1290', 'استهلاک انباشته', 'دارایی', '1200', 2, 0],
+            // بدهی‌ها
+            ['2100', 'بدهی‌های جاری', 'بدهی', null, 1, 1],
+            ['2110', 'حساب‌های پرداختنی', 'بدهی', '2100', 2, 0],
+            ['2111', 'بدهی به تأمین‌کنندگان', 'بدهی', '2110', 3, 0],
+            ['2120', 'چک‌های پرداختی', 'بدهی', '2100', 2, 0],
+            ['2130', 'مالیات payable'.replace(' payable', ' متعلقه'), 'بدهی', '2100', 2, 0],
+            ['2140', 'سود و مالیات تکلیفی', 'بدهی', '2100', 2, 0],
+            ['2200', 'بدهی‌های بلندمدت', 'بدهی', null, 1, 1],
+            ['2210', 'تسهیلات بانکی', 'بدهی', '2200', 2, 0],
+            // حقوق صاحبان سهام
+            ['3100', 'حقوق صاحبان سهام', 'سرمایه', null, 1, 1],
+            ['3110', 'سرمایه', 'سرمایه', '3100', 2, 0],
+            ['3120', 'اندوخته‌ها', 'سرمایه', '3100', 2, 0],
+            ['3130', 'سود انباشته', 'سرمایه', '3100', 2, 0],
+            // درآمد‌ها
+            ['4100', 'درآمدها', 'درآمد', null, 1, 1],
+            ['4110', 'فروش کالا', 'درآمد', '4100', 2, 0],
+            ['4120', 'درآمد خدمات', 'درآمد', '4100', 2, 0],
+            ['4130', 'سایر درآمدها', 'درآمد', '4100', 2, 0],
+            ['4190', 'برگشت از فروش و تخفیفات', 'درآمد', '4100', 2, 0],
+            // هزینه‌ها
+            ['5100', 'بهای تمام‌شده کالای فروش‌رفته', 'هزینه', null, 1, 1],
+            ['5110', 'بهای تمام‌شده', 'هزینه', '5100', 2, 0],
+            ['5200', 'هزینه‌های عملیاتی', 'هزینه', null, 1, 1],
+            ['5210', 'هزینه حقوق و دستمزد', 'هزینه', '5200', 2, 0],
+            ['5220', 'هزینه اجاره', 'هزینه', '5200', 2, 0],
+            ['5230', 'هزینه آب، برق و تلفن', 'هزینه', '5200', 2, 0],
+            ['5240', 'هزینه تبلیغات', 'هزینه', '5200', 2, 0],
+            ['5250', 'هزینه حمل‌ونقل', 'هزینه', '5200', 2, 0],
+            ['5260', 'هزینه استهلاک', 'هزینه', '5200', 2, 0],
+            ['5290', 'هزینه‌های متفرقه', 'هزینه', '5200', 2, 0],
+            ['5300', 'هزینه‌های مالی', 'هزینه', null, 1, 1],
+            ['5310', 'هزینه بهره', 'هزینه', '5300', 2, 0],
+        ];
+        accRows.forEach(([code, title, type, parent, level, isGroup]) => db.insert('accounts', { code, title, type, parent_code: parent, parent_id: null, level, nature: (type === 'دارایی' || type === 'هزینه') ? 'debit' : 'credit', is_active: 1, is_group: isGroup }));
+        db.run(`UPDATE accounts SET parent_id = (SELECT p.id FROM accounts p WHERE p.code = accounts.parent_code) WHERE parent_code IS NOT NULL`);
+        // ---- base data ----
+        [['G-01', 'کالای دیجیتال'], ['G-02', 'لوازم جانبی'], ['G-03', 'شبکه و ارتباطات'], ['G-04', 'خدمات'], ['G-05', 'مواد مصرفی']].forEach(g => db.insert('item_groups', { code: g[0], name: g[1] }));
+        [['عدد', 'عد'], ['کیلوگرم', 'کگ'], ['متر', 'م'], ['بسته', 'پک'], ['ساعت', 'س']].forEach(u => db.insert('units', { name: u[0], short_name: u[1] }));
+        [['WH-01', 'انبار مرکزی', 'حسن جعفری', 'تهران - خیابان ولیعصر'], ['WH-02', 'انبار شرق', 'نیما صادقی', 'تهران - خیانگ پیروزی']].forEach(w => db.insert('warehouses', { code: w[0], name: w[1], manager: w[2], address: w[3], is_active: 1 }));
+        const items = [
+            ['K-1001', 'لپ‌تاپ ایسوس VivoBook 15', 1, 1, 'goods', 45000000, 52000000, 5, 46000000],
+            ['K-1002', 'مانیتور سامسونگ 24 inch', 1, 1, 'goods', 6500000, 8200000, 8, 6600000],
+            ['K-1003', 'کیبورد مکانیکال Redragon', 2, 1, 'goods', 1200000, 1850000, 10, 1250000],
+            ['K-1004', 'موس بی‌سیم لاجیتک M185', 2, 1, 'goods', 350000, 590000, 15, 360000],
+            ['K-1005', 'هدفون گیمینگ Razer', 2, 1, 'goods', 2100000, 3100000, 6, 2200000],
+            ['K-1006', 'مودم روتر TP-Link', 3, 1, 'goods', 1800000, 2600000, 5, 1850000],
+            ['K-1007', 'کابل شبکه Cat6 (1m)', 3, 3, 'goods', 45000, 85000, 100, 47000],
+            ['K-1008', 'سوئیچ 8 پورت دینک', 3, 1, 'goods', 2400000, 3300000, 4, 2450000],
+            ['K-1009', 'هارد SSD 512GB', 1, 1, 'goods', 2200000, 3000000, 12, 2250000],
+            ['K-1010', 'رم Laptops DDR4 8GB', 1, 1, 'goods', 1600000, 2200000, 10, 1650000],
+            ['S-2001', 'خدمات نصب و راه‌اندازی', 4, 5, 'service', 0, 800000, 0, 0],
+            ['S-2002', 'خدمات پشتیبانی ماهانه', 4, 5, 'service', 0, 1500000, 0, 0],
+            ['K-1011', 'پرینتر لیزری HP M404', 1, 1, 'goods', 14500000, 17500000, 3, 14600000],
+            ['K-1012', 'کارتریج پرینتر 26A', 5, 4, 'goods', 950000, 1400000, 20, 970000],
+        ];
+        items.forEach(it => db.insert('items', { code: it[0], name: it[1], group_id: it[2], unit_id: it[3], kind: it[4], buy_price: it[5], sell_price: it[6], price: it[6], min_stock: it[7], avg_cost: it[8], is_active: 1 }));
+        const contacts = [
+            ['SH-001', 'شرکت آلفا تجارت', 'both', 'حقوقی', '1010456789', '021-88112233', '09121112233', 'alpha@mail.ir', 'تهران', 'خیابان آزادی، پلاک ۴۵', 500000000],
+            ['SH-002', 'پارس تأمین بتا', 'supplier', 'حقوقی', '1010987654', '031-33445566', '09131112233', 'beta@mail.ir', 'اصفهان', 'خیابان چهارباغ، پلاک ۱۲', 300000000],
+            ['SH-003', 'فروشگاه گاما', 'customer', 'حقوقی', '1010112233', '051-32223344', '09151112233', 'gamma@mail.ir', 'مشهد', 'بلدگاه احمدآباد، پلاک ۸۸', 200000000],
+            ['SH-004', 'آقای سعید delta'.replace('delta', 'دلتا'), 'customer', 'حقیقی', '0012345678', '', '09122223344', '', 'تهران', 'سعادت آباد، پلاک ۳', 100000000],
+            ['SH-005', 'شرکت epsilon'.replace('epsilon', 'اپسیلون رایانه'), 'both', 'حقوقی', '1010556677', '021-88990011', '09123334455', 'eps@mail.ir', 'تهران', 'جردنیه، پلاک ۷۷', 400000000],
+            ['SH-006', 'خانم مریم زهرا', 'customer', 'حقیقی', '0456789123', '', '09351112233', '', 'شیراز', 'خیابان زند، پلاک ۹', 80000000],
+            ['SH-007', 'تأمین قطعات Eta'.replace('Eta', 'اتا'), 'supplier', 'حقوقی', '1010222333', '026-32221111', '', 'eta@mail.ir', 'کرج', 'عظیمیه، پلاک ۵۵', 250000000],
+            ['SH-008', 'رایانه‌فروشی تتا', 'customer', 'حقوقی', '1010888999', '021-66778899', '09126667788', 'theta@mail.ir', 'تهران', 'چهارراه سرسبز، خیابان جمهوری', 150000000],
+        ];
+        contacts.forEach((c, i) => {
+            const openBal = [125000000, -82000000, 45000000, 12000000, -30000000, 8000000, -55000000, 22000000][i];
+            db.insert('contacts', { code: c[0], name: c[1], kind: c[2], type: c[2], status: 'active', person_type: c[3], company_code: c[4], national_id: c[4], phone: c[5], mobile: c[6], email: c[7], city: c[8], address: Array.isArray(c[9]) ? c[9].join('') : c[9], credit_limit: c[10], opening_balance: openBal, is_active: 1 });
+        });
+        [['نقدی', 'cash'], ['کارت بانکی', 'card'], ['چک', 'check'], ['حواله/انتقال', 'transfer'], ['پایانه', 'pos']].forEach(pm => db.insert('payment_methods', { name: pm[0], kind: pm[1] }));
+        [['CA-01', 'صندوق مرکزی', 'cash', null, null, null, 15000000], ['CA-02', 'صندوق فروش', 'cash', null, null, null, 4000000], ['BA-01', 'بانک ملت - جاری ۱', 'bank', 'ملت', '6104999000001234', '1234567', 85000000], ['BA-02', 'بانک ملی - جاری ۲', 'bank', 'ملی', '6037999000009876', '7654321', 42000000]].forEach(a => db.insert('cash_accounts', { code: a[0], name: a[1], kind: a[2], bank_name: a[3], card_no: a[4], account_no: a[5], opening_balance: a[6], is_active: 1 }));
+        // ---- inventory initial receipts (movements) ----
+        const stockInit = [
+            ['K-1001', 1, 8, 46000000], ['K-1002', 1, 20, 6600000], ['K-1003', 1, 35, 1250000], ['K-1004', 1, 12, 360000],
+            ['K-1005', 1, 14, 2200000], ['K-1006', 1, 9, 1850000], ['K-1007', 1, 200, 47000], ['K-1008', 1, 6, 2450000],
+            ['K-1009', 1, 40, 2250000], ['K-1010', 1, 25, 1650000], ['K-1011', 1, 4, 14600000], ['K-1012', 1, 18, 970000],
+            ['K-1002', 2, 6, 6600000], ['K-1009', 2, 10, 2250000], ['K-1004', 2, 4, 360000],
+        ];
+        let invNo = 6000;
+        stockInit.forEach(([code, wh, qty, price]) => {
+            const item = db.get(`SELECT * FROM items WHERE code=?`, [code]);
+            const d = db.insert('inventory_documents', { number: `IN-${++invNo}`, date: '1405-01-10', kind: 'receipt', warehouse_id: wh, status: 'final', note: 'موجودی افتتاحیه' });
+            db.insert('inventory_document_lines', { doc_id: d, item_id: item.id, item_name: item.name, qty, quantity: qty, unit_price: price, unit: 'عد' });
+            db.insert('inventory_movements', { date: '1405-01-10', item_id: item.id, warehouse_id: wh, direction: 'in', qty, unit_price: price, source: 'رسید انبار', ref_number: `IN-${invNo}` });
+        });
+        // ---- purchases ----
+        const purDocs = [
+            [2, 1, '1405-02-05', [['K-1001', 5, 45000000], ['K-1002', 10, 6500000]], 5000000],
+            [7, 1, '1405-02-20', [['K-1009', 20, 2200000], ['K-1010', 15, 1600000]], 2000000],
+            [2, 1, '1405-03-11', [['K-1003', 25, 1200000], ['K-1004', 30, 350000], ['K-1005', 10, 2100000]], 1500000],
+            [5, 2, '1405-04-02', [['K-1006', 8, 1800000], ['K-1007', 300, 45000], ['K-1008', 5, 2400000]], 0],
+            [7, 1, '1405-05-15', [['K-1011', 3, 14500000], ['K-1012', 25, 950000]], 3000000],
+        ];
+        let pn = 1000;
+        purDocs.forEach(([cid, wh, date, lines, disc]) => {
+            pn++;
+            let lt = 0;
+            lines.forEach(l => (lt += l[1] * l[2]));
+            const tax = Math.round((lt - disc) * 0.09);
+            const fin = lt - disc + tax;
+            const paid = cid === 2 ? fin : Math.round(fin * 0.5);
+            const id = db.insert('purchase_documents', { number: `PUR-${pn}`, date, contact_id: cid, warehouse_id: wh, lines_total: lt, discount: disc, tax, final_total: fin, paid_amount: paid, balance: fin - paid, status: 'final', kind: 'invoice', doc_number: `PUR-${pn}`, doc_date: date, invoice_date: date, subtotal: lt, total: fin, grand_total: fin, description: '' });
+            lines.forEach(([code, qty, price]) => {
+                const item = db.get(`SELECT * FROM items WHERE code=?`, [code]);
+                db.insert('purchase_lines', { doc_id: id, item_id: item.id, item_name: item.name, qty, quantity: qty, unit: 'عد', unit_price: price, discount: 0, line_total: qty * price, total: qty * price });
+            });
+        });
+        // ---- sales ----
+        const salDocs = [
+            [1, 1, '1405-02-12', [['K-1001', 2, 52000000], ['K-1003', 4, 1850000]], 2000000, 'cash'],
+            [3, 1, '1405-02-28', [['K-1002', 6, 8200000], ['K-1009', 8, 3000000]], 1000000, 'credit'],
+            [4, 1, '1405-03-16', [['K-1004', 10, 590000], ['K-1005', 3, 3100000], ['S-2001', 2, 800000]], 0, 'cash'],
+            [5, 2, '1405-04-08', [['K-1009', 12, 3000000], ['K-1010', 8, 2200000]], 1500000, 'credit'],
+            [6, 1, '1405-04-22', [['K-1006', 3, 2600000], ['K-1007', 80, 85000]], 300000, 'cash'],
+            [1, 1, '1405-05-05', [['K-1011', 2, 17500000], ['K-1012', 10, 1400000]], 2500000, 'credit'],
+            [8, 2, '1405-05-20', [['K-1002', 5, 8200000], ['K-1003', 6, 1850000]], 500000, 'cash'],
+            [3, 1, '1405-06-02', [['K-1001', 1, 52000000], ['S-2002', 1, 1500000]], 0, 'credit'],
+        ];
+        let sn = 2000;
+        salDocs.forEach(([cid, wh, date, lines, disc, payType]) => {
+            sn++;
+            let lt = 0;
+            lines.forEach(l => (lt += l[1] * l[2]));
+            const tax = Math.round((lt - disc) * 0.09);
+            const fin = lt - disc + tax;
+            const paid = payType === 'cash' ? fin : Math.round(fin * 0.3);
+            const id = db.insert('sales_documents', { number: `INV-${sn}`, date, contact_id: cid, warehouse_id: wh, lines_total: lt, discount: disc, tax, final_total: fin, paid_amount: paid, balance: fin - paid, status: 'final', kind: 'invoice', payment_type: payType, doc_number: `INV-${sn}`, doc_date: date, invoice_date: date, subtotal: lt, total: fin, grand_total: fin, description: '' });
+            lines.forEach(([code, qty, price]) => {
+                const item = db.get(`SELECT * FROM items WHERE code=?`, [code]);
+                db.insert('sales_lines', { doc_id: id, item_id: item.id, item_name: item.name, qty, quantity: qty, unit: item.kind === 'service' ? 'ساعت' : 'عد', unit_price: price, cost_price: item.avg_cost, discount: 0, line_total: qty * price, total: qty * price });
+                if (item.kind === 'goods') {
+                    db.insert('inventory_movements', { date, item_id: item.id, warehouse_id: wh, direction: 'out', qty, unit_price: price, source: 'فاکتور فروش', ref_number: `INV-${sn}` });
+                }
+            });
+        });
+        // ---- treasury ----
+        let tn = 4000;
+        const txs = [
+            // kind receive/payment/transfer, account, toAccount, contact, amount, method, desc
+            ['receive', 1, null, 1, 25000000, 'نقدی', 'تسویه بخشی از فاکتور INV-2001'],
+            ['receive', 3, null, 3, 30000000, 'چک', 'چک دریافتی بابت INV-2002'],
+            ['payment', 1, null, 2, 20000000, 'نقدی', 'بخشی از فاکتور خرید PUR-1001'],
+            ['receive', 2, null, 4, 8000000, 'کارت بانکی', 'فروش نقدی INV-2003'],
+            ['payment', 3, null, 5, 35000000, 'حواله/انتقال', 'پرداخت فاکتور PUR-1004'],
+            ['transfer', 1, 2, null, 10000000, 'انتقال', 'انتقال بین صندوق‌ها'],
+            ['receive', 3, null, 5, 40000000, 'چک', 'چک مشتری اپسیلون'],
+            ['payment', 4, null, 7, 15000000, 'کارت بانکی', 'هزینه حمل'],
+        ];
+        txs.forEach(t => {
+            tn++;
+            db.insert('treasury_transactions', { number: `${t[0] === 'receive' ? 'RCT' : t[0] === 'payment' ? 'PMT' : 'TRF'}-${tn}`, date: '1405-03-15', kind: t[0], account_id: t[1], to_account_id: t[2], amount: t[4], contact_id: t[3], method: t[5], description: t[6], status: 'final' });
+        });
+        // ---- checks ----
+        const chks = [
+            // number, amount, bank, drawer, payee, issue, due, kind(receive/pay), contact
+            ['110234', 30000000, 'ملت', 'شرکت آلفا تجارت', 'سرمد پارس', '1405-02-28', '1405-08-15', 'receive', 1],
+            ['110235', 45000000, 'ملی', 'فروشگاه گاما', 'سرمد پارس', '1405-03-01', '1405-09-20', 'receive', 3],
+            ['110236', 12000000, 'سامان', 'آقای سعید دلتا', 'سرمد پارس', '1405-04-05', '1405-07-25', 'receive', 4],
+            ['220111', 25000000, 'ملت', 'سرمد پارس', 'پارس تأمین بتا', '1405-02-10', '1405-08-10', 'pay', 2],
+            ['220112', 18000000, 'ملی', 'سرمد پارس', 'تأمین قطعات اتا', '1405-03-20', '1405-10-05', 'pay', 7],
+            ['110237', 8000000, 'اقتصاد', 'خانم مریم زهرا', 'سرمد پارس', '1405-05-01', '1405-06-10', 'receive', 6],
+            ['220113', 9000000, 'صادرات', 'سرمد پارس', 'شرکت آلفا تجارت', '1405-05-10', '1405-07-01', 'pay', 1],
+        ];
+        chks.forEach((c, i) => {
+            const id = db.insert('checks', { number: c[0], amount: c[1], bank_name: c[2], branch: 'شعبه مرکزی', drawer: c[3], payee: c[4], issue_date: c[5], due_date: c[6], kind: c[7], status: i === 5 ? 'returned' : i === 0 ? 'collected' : c[7] === 'receive' ? 'received' : 'issued', contact_id: c[8] });
+            db.insert('check_events', { check_id: id, event_date: c[5], from_status: null, to_status: c[7] === 'receive' ? 'received' : 'issued', note: 'ثبت اولیه چک', user_name: 'مدیر سیستم' });
+            if (i === 5)
+                db.insert('check_events', { check_id: id, event_date: '1405-06-12', from_status: 'received', to_status: 'returned', note: 'کسر موجودی', user_name: 'مدیر مالی' });
+            if (i === 0)
+                db.insert('check_events', { check_id: id, event_date: '1405-08-16', from_status: 'received', to_status: 'collected', note: 'وصول شد', user_name: 'مدیر مالی' });
+        });
+        // ---- accounting documents ----
+        const mkDoc = (num, date, desc, lines, status, kind = 'manual', sourceRef = null) => {
+            const td = lines.reduce((a, l) => a + l[1], 0);
+            const tc = lines.reduce((a, l) => a + l[2], 0);
+            const id = db.insert('accounting_documents', { number: num, date, fiscal_year: '۱۴۰۵', description: desc, narrative: desc, kind, source_ref: sourceRef, source_type: kind, source_id: sourceRef, status, total_debit: td, debit_total: td, total_credit: tc, credit_total: tc });
+            lines.forEach(l => {
+                const acc = db.get(`SELECT title FROM accounts WHERE code=?`, [l[0]]);
+                db.insert('accounting_document_lines', { doc_id: id, account_code: l[0], account_title: acc?.title || '', debit: l[1], credit: l[2], note: '' });
+            });
+        };
+        mkDoc('ACC-3001', '1405-02-12', 'ثبت فروش نقدی INV-2001', [['1111', 61390000, 0], ['4110', 0, 56300000], ['2130', 0, 5090000]], 'final', 'auto', 'INV-2001');
+        mkDoc('ACC-3002', '1405-02-05', 'ثبت خرید PUR-1001', [['1131', 295000000, 0], ['2111', 0, 270650000], ['2130', 0, 24350000]], 'final', 'auto', 'PUR-1001');
+        mkDoc('ACC-3003', '1405-03-15', 'دریافت وجه از مشتری آلفا', [['1111', 25000000, 0], ['1121', 0, 25000000]], 'final', 'auto', 'RCT-4001');
+        mkDoc('ACC-3004', '1405-04-01', 'هزینه اجاره ماه فروردین', [['5220', 15000000, 0], ['1111', 0, 15000000]], 'final');
+        mkDoc('ACC-3005', '1405-04-01', 'ثبت حقوق کارکنان', [['5210', 48000000, 0], ['2100', 0, 48000000]], 'draft');
+        mkDoc('ACC-3006', '1405-05-01', 'خرید تجهیزات اداری', [['1211', 32000000, 0], ['1112', 0, 32000000]], 'confirmed');
+        // ---- audit log ----
+        [['مدیر سیستم', 'login', 'auth', '-', 'ورود موفق', 'success'], ['مدیر سیستم', 'create', 'sales_documents', 'INV-2001', 'ثبت فاکتور فروش', 'success'], ['مدیر مالی', 'confirm', 'accounting_documents', 'ACC-3001', 'قطعی سند', 'success'], ['انباردار', 'create', 'inventory_documents', 'IN-6001', 'رسید انبار', 'success']].forEach(a => db.insert('audit_logs', { user_name: a[0], username: a[0], user_id: 1, action: a[1], entity: a[2], table_name: a[2], record_id: a[3], details: a[4], result: a[5], created_at: datetime2() }));
+    });
+    db.save();
+}
