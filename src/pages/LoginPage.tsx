@@ -12,7 +12,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [dbReady, setDbReady] = useState(false);
   const [attempts, setAttempts] = useState(0);
 
   const handleLogin = async () => {
@@ -27,10 +26,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     try {
       // Initialize database
       await initDatabase();
-      setDbReady(true);
 
-      // Check credentials - using parameterized query
+      // Check credentials
       const users = execQuery(`SELECT * FROM users WHERE username = ? AND is_active = 1`, [username]);
+      
+      console.log('Query result:', users);
       
       if (!users || users.length === 0) {
         console.warn('User not found or inactive:', username);
@@ -42,6 +42,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
       const user = users[0];
       console.log('User found:', user);
+      console.log('Password check:', user.password_hash, '===', password, '?', user.password_hash === password);
       
       if (user.password_hash !== password) {
         console.warn('Password mismatch for user:', username);
@@ -86,58 +87,145 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 relative overflow-hidden" dir="rtl">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #581c87 100%)',
+      position: 'relative',
+      overflow: 'hidden',
+      padding: '20px'
+    }} dir="rtl">
       {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute', top: '25%', right: '25%',
+          width: '400px', height: '400px',
+          background: 'rgba(59, 130, 246, 0.1)',
+          borderRadius: '50%',
+          filter: 'blur(80px)',
+          animation: 'pulse 3s infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute', bottom: '25%', left: '25%',
+          width: '400px', height: '400px',
+          background: 'rgba(168, 85, 247, 0.1)',
+          borderRadius: '50%',
+          filter: 'blur(80px)',
+          animation: 'pulse 3s infinite',
+          animationDelay: '1s'
+        }}></div>
       </div>
 
-      {/* Grid pattern */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }}></div>
-
-      <div className="relative z-10 w-full max-w-md px-6">
+      {/* Login Card */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        maxWidth: '420px'
+      }}>
         {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 shadow-2xl shadow-purple-500/30 mb-4 animate-float">
-            <BookOpen size={36} className="text-white" />
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '80px',
+            height: '80px',
+            borderRadius: '24px',
+            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
+            boxShadow: '0 20px 40px rgba(139, 92, 246, 0.3)',
+            marginBottom: '16px'
+          }}>
+            <BookOpen size={36} color="white" />
           </div>
-          <h1 className="text-3xl font-black text-white mb-2">سَرمد</h1>
-          <p className="text-blue-200/80 text-sm">سیستم حسابداری، امور مالی و انبارداری</p>
-          <div className="flex items-center justify-center gap-3 mt-3">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20">
-              <Shield size={12} className="text-green-400" />
-              <span className="text-[10px] text-green-300">آفلاین</span>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '900',
+            color: 'white',
+            marginBottom: '8px',
+            margin: '0 0 8px 0'
+          }}>سَرمد</h1>
+          <p style={{
+            fontSize: '14px',
+            color: 'rgba(191, 219, 254, 0.8)',
+            margin: 0
+          }}>سیستم حسابداری، امور مالی و انبارداری</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '12px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '4px 12px', borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <Shield size={12} color="#4ade80" />
+              <span style={{ fontSize: '10px', color: '#86efac' }}>آفلاین</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20">
-              <Zap size={12} className="text-amber-400" />
-              <span className="text-[10px] text-amber-300">SQLite</span>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '4px 12px', borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <Zap size={12} color="#fbbf24" />
+              <span style={{ fontSize: '10px', color: '#fde047' }}>SQLite</span>
             </div>
           </div>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
-          <h2 className="text-lg font-bold text-white mb-6 text-center">ورود به سیستم</h2>
+        {/* Login Form */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          padding: '32px',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)'
+        }}>
+          <h2 style={{
+            fontSize: '18px',
+            fontWeight: '700',
+            color: 'white',
+            marginBottom: '24px',
+            textAlign: 'center',
+            margin: '0 0 24px 0'
+          }}>ورود به سیستم</h2>
 
           {/* Error Message */}
           {error && (
-            <div className="flex items-center gap-2 p-3 mb-4 rounded-xl bg-red-500/20 border border-red-500/30 animate-scale-in">
-              <AlertCircle size={16} className="text-red-400 flex-shrink-0" />
-              <span className="text-xs text-red-200">{error}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px',
+              marginBottom: '16px',
+              borderRadius: '12px',
+              background: 'rgba(239, 68, 68, 0.2)',
+              border: '1px solid rgba(239, 68, 68, 0.3)'
+            }}>
+              <AlertCircle size={16} color="#fca5a5" />
+              <span style={{ fontSize: '13px', color: '#fecaca' }}>{error}</span>
             </div>
           )}
 
           {/* Username */}
-          <div className="mb-4">
-            <label className="block text-xs text-blue-200 mb-2 font-medium">نام کاربری</label>
-            <div className="relative">
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <User size={16} className="text-blue-300" />
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '13px',
+              color: 'rgba(191, 219, 254, 0.9)',
+              marginBottom: '8px',
+              fontWeight: '500'
+            }}>نام کاربری</label>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}>
+                <User size={18} color="rgba(147, 197, 253, 0.8)" />
               </div>
               <input
                 type="text"
@@ -145,17 +233,50 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 onChange={(e) => setUsername(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="نام کاربری خود را وارد کنید"
-                className="w-full pr-10 pl-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-sm placeholder:text-white/40 outline-none focus:border-blue-400 focus:bg-white/15 transition-all"
+                style={{
+                  width: '100%',
+                  paddingRight: '44px',
+                  paddingLeft: '16px',
+                  paddingTop: '12px',
+                  paddingBottom: '12px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.8)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                }}
               />
             </div>
           </div>
 
           {/* Password */}
-          <div className="mb-6">
-            <label className="block text-xs text-blue-200 mb-2 font-medium">رمز عبور</label>
-            <div className="relative">
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Lock size={16} className="text-blue-300" />
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '13px',
+              color: 'rgba(191, 219, 254, 0.9)',
+              marginBottom: '8px',
+              fontWeight: '500'
+            }}>رمز عبور</label>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}>
+                <Lock size={18} color="rgba(147, 197, 253, 0.8)" />
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -163,14 +284,48 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="رمز عبور خود را وارد کنید"
-                className="w-full pr-10 pl-10 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-sm placeholder:text-white/40 outline-none focus:border-blue-400 focus:bg-white/15 transition-all"
+                style={{
+                  width: '100%',
+                  paddingRight: '44px',
+                  paddingLeft: '44px',
+                  paddingTop: '12px',
+                  paddingBottom: '12px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.8)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-300 hover:text-white transition-colors"
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPassword ? <EyeOff size={18} color="rgba(147, 197, 253, 0.8)" /> : <Eye size={18} color="rgba(147, 197, 253, 0.8)" />}
               </button>
             </div>
           </div>
@@ -179,31 +334,94 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white text-sm font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              width: '100%',
+              paddingTop: '14px',
+              paddingBottom: '14px',
+              borderRadius: '12px',
+              background: loading ? 'rgba(99, 102, 241, 0.5)' : 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
+              color: 'white',
+              fontSize: '15px',
+              fontWeight: '700',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 10px 25px rgba(139, 92, 246, 0.3)',
+              transition: 'all 0.2s',
+              marginBottom: '20px'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 15px 30px rgba(139, 92, 246, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 10px 25px rgba(139, 92, 246, 0.3)';
+            }}
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderTopColor: 'white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
                 در حال ورود...
               </span>
             ) : 'ورود به سیستم'}
           </button>
 
           {/* Demo credentials */}
-          <div className="mt-5 p-3 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-[10px] text-blue-200/60 text-center mb-2">اطلاعات ورود نمونه:</p>
-            <div className="flex items-center justify-center gap-4 text-[11px]">
-              <span className="text-blue-200">کاربری: <strong className="text-white">admin</strong></span>
-              <span className="text-blue-200">رمز: <strong className="text-white">admin123</strong></span>
+          <div style={{
+            padding: '12px',
+            borderRadius: '12px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <p style={{
+              fontSize: '11px',
+              color: 'rgba(191, 219, 254, 0.6)',
+              textAlign: 'center',
+              marginBottom: '8px',
+              margin: '0 0 8px 0'
+            }}>اطلاعات ورود نمونه:</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', fontSize: '12px' }}>
+              <span style={{ color: 'rgba(191, 219, 254, 0.8)' }}>
+                کاربری: <strong style={{ color: 'white' }}>admin</strong>
+              </span>
+              <span style={{ color: 'rgba(191, 219, 254, 0.8)' }}>
+                رمز: <strong style={{ color: 'white' }}>admin123</strong>
+              </span>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-[10px] text-white/40">نسخه ۱.۰.۰ | پایگاه داده SQLite | اجرای محلی و آفلاین</p>
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <p style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.4)', margin: 0 }}>
+            نسخه ۱.۰.۰ | پایگاه داده SQLite | اجرای محلی و آفلاین
+          </p>
         </div>
       </div>
+
+      {/* Animations */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        input::placeholder {
+          color: rgba(255, 255, 255, 0.4);
+        }
+      `}</style>
     </div>
   );
 }

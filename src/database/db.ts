@@ -40,18 +40,25 @@ class LocalStorageDB implements DBInterface {
     if (match[3]) {
       const whereClause = match[3];
       
-      // Handle "username = ?"
-      const equalityMatch = whereClause.match(/(\w+)\s*=\s*\?/);
-      if (equalityMatch && params.length > 0) {
-        const field = equalityMatch[1];
-        const value = params[0];
-        tableData = tableData.filter((row: any) => row[field] === value);
-      }
+      // Handle multiple conditions like "username = ? AND is_active = 1"
+      const conditions = whereClause.split(/\s+AND\s+/i);
       
-      // Handle "is_active = 1"
-      const activeMatch = whereClause.match(/is_active\s*=\s*1/);
-      if (activeMatch) {
-        tableData = tableData.filter((row: any) => row.is_active === 1 || row.is_active === '1');
+      for (const condition of conditions) {
+        // Handle "field = ?"
+        const equalityMatch = condition.match(/(\w+)\s*=\s*\?/);
+        if (equalityMatch && params.length > 0) {
+          const field = equalityMatch[1];
+          const value = params[0];
+          tableData = tableData.filter((row: any) => String(row[field]) === String(value));
+        }
+        
+        // Handle "field = value" (without ?)
+        const directMatch = condition.match(/(\w+)\s*=\s*['"]?([^'"]+)['"]?/);
+        if (directMatch && !condition.includes('?')) {
+          const field = directMatch[1];
+          const value = directMatch[2];
+          tableData = tableData.filter((row: any) => String(row[field]) === String(value));
+        }
       }
     }
 

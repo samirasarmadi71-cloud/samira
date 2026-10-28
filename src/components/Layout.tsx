@@ -237,17 +237,17 @@ export default function Layout({
   const currentItem = menuItems.find(m => m.id === currentPage);
 
   return (
-    <div className="flex h-screen w-screen" style={{ direction: 'rtl' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', direction: 'rtl', overflow: 'hidden' }}>
       {/* Sidebar */}
       <div 
         style={{ 
-          width: sidebarOpen ? '256px' : '0px',
-          minWidth: sidebarOpen ? '256px' : '0px',
+          width: sidebarOpen ? '280px' : '0px',
+          minWidth: sidebarOpen ? '280px' : '0px',
           transition: 'all 0.3s ease-in-out',
           overflow: sidebarOpen ? 'visible' : 'hidden',
           background: darkMode ? '#1f2937' : '#ffffff',
-          borderLeft: sidebarOpen ? (darkMode ? '1px solid #374151' : '1px solid #f3f4f6') : 'none',
-          boxShadow: sidebarOpen ? '2px 0 8px rgba(0,0,0,0.05)' : 'none',
+          borderLeft: sidebarOpen ? (darkMode ? '1px solid #374151' : '1px solid #e5e7eb') : 'none',
+          boxShadow: sidebarOpen ? '2px 0 12px rgba(0,0,0,0.08)' : 'none',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
