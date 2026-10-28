@@ -1,239 +1,143 @@
-// Database abstraction layer - LocalStorage only
-// Simple and reliable database using localStorage
+// ============ Database facade — REAL SQLite (sql.js) engine ============
+import { getSqlite, SqliteDatabase } from './sqlite';
+import { runMigrations, seedDemoData, hashPassword } from './schema';
 
-interface DBInterface {
-  init(): Promise<void>;
-  exec(sql: string, params?: any[]): any[];
-  run(sql: string, params?: any[]): void;
-  save(): void;
-  close(): void;
+let db: SqliteDatabase | null = null;
+
+/** Compatibility column aliases so legacy queries keep working on the real schema */
+const ALIASES: Record<string, string[]> = {
+  contacts: [`kind AS type`, `CASE WHEN is_active=1 THEN 'active' ELSE 'inactive' END AS status`],
+  items: [`sell_price AS price`],
+  sales_documents: [`final_total AS total`, `final_total AS grand_total`, `number AS doc_number`],
+  purchase_documents: [`final_total AS total`, `final_total AS grand_total`, `number AS doc_number`],
+  accounting_documents: [`description AS narrative`, `total_debit AS debit_total`, `total_credit AS credit_total`],
+  audit_logs: [`at AS created_at`, `entity AS table_name`, `user_name AS username`],
+  warehouses: [],
+};
+
+function decorate(table: string, rows: any[]): any[] {
+  const al = ALIASES[table];
+  if (!al || al.length === 0) return rows;
+  return rows.map((r) => {
+    const out = { ...r };
+    for (const expr of al) {
+      const [src, alias] = expr.includes(' AS ') ? [expr.split(' AS ')[0].trim(), expr.split(' AS ')[1].trim()] : [expr, expr];
+      // evaluate simple CASE expression
+      if (src.startsWith('CASE')) {
+        try {
+          const v = db!.get(`SELECT ${expr} AS v FROM ${table} WHERE id=?`, [r.id]);
+          out[alias] = v?.v ?? r[alias];
+        } catch { /* ignore */ }
+      } else if (out[src] !== undefined && out[alias] === undefined) {
+        out[alias] = out[src];
+      }
+    }
+    return out;
+  });
 }
-
-// ============ LocalStorage Database Implementation ============
-class LocalStorageDB implements DBInterface {
-  private data: Map<string, any[]> = new Map();
-  private storageKey = 'sarmad_db';
-
-  async init(): Promise<void> {
-    try {
-      const saved = localStorage.getItem(this.storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        this.data = new Map(Object.entries(parsed));
-      }
-      console.log('✅ LocalStorage database initialized');
-    } catch (error) {
-      console.error('❌ Failed to initialize DB:', error);
-      throw error;
-    }
-  }
-
-  exec(sql: string, params: any[] = []): any[] {
-    // Simple SQL parser for SELECT queries
-    const match = sql.match(/SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?/i);
-    if (!match) return [];
-
-    const tableName = match[2];
-    let tableData = this.data.get(tableName) || [];
-
-    // Apply WHERE clause filtering
-    if (match[3]) {
-      const whereClause = match[3];
-      
-      // Handle "username = ?"
-      const equalityMatch = whereClause.match(/(\w+)\s*=\s*\?/);
-      if (equalityMatch && params.length > 0) {
-        const field = equalityMatch[1];
-        const value = params[0];
-        tableData = tableData.filter((row: any) => row[field] === value);
-      }
-      
-      // Handle "is_active = 1"
-      const activeMatch = whereClause.match(/is_active\s*=\s*1/);
-      if (activeMatch) {
-        tableData = tableData.filter((row: any) => row.is_active === 1 || row.is_active === '1');
-      }
-    }
-
-    return tableData;
-  }
-
-  run(sql: string, params: any[] = []): void {
-    // Handle CREATE TABLE
-    const createMatch = sql.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+)/i);
-    if (createMatch) {
-      const tableName = createMatch[1];
-      if (!this.data.has(tableName)) {
-        this.data.set(tableName, []);
-      }
-      return;
-    }
-    
-    // Handle INSERT
-    const insertMatch = sql.match(/INSERT\s+INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
-    if (insertMatch) {
-      const tableName = insertMatch[1];
-      const columns = insertMatch[2].split(',').map((c: string) => c.trim());
-      const valuesStr = insertMatch[3];
-      
-      let values: any[] = [];
-      const valueParts = valuesStr.split(',').map((v: string) => v.trim());
-      
-      let paramIndex = 0;
-      for (const part of valueParts) {
-        if (part === '?') {
-          values.push(params[paramIndex++]);
-        } else if (part.startsWith("'") && part.endsWith("'")) {
-          values.push(part.slice(1, -1));
-        } else if (!isNaN(Number(part))) {
-          values.push(Number(part));
-        } else if (part.toUpperCase() === 'CURRENT_TIMESTAMP') {
-          values.push(new Date().toISOString());
-        } else {
-          values.push(part);
-        }
-      }
-      
-      const row: any = { id: Date.now() };
-      columns.forEach((col: string, idx: number) => {
-        row[col] = values[idx];
-      });
-      
-      if (!this.data.has(tableName)) {
-        this.data.set(tableName, []);
-      }
-      const tableData = this.data.get(tableName)!;
-      tableData.push(row);
-      
-      console.log(`✅ Inserted into ${tableName}:`, row);
-    }
-    
-    this.save();
-  }
-
-  save(): void {
-    try {
-      const obj = Object.fromEntries(this.data);
-      localStorage.setItem(this.storageKey, JSON.stringify(obj));
-    } catch (e) {
-      console.error('Failed to save DB:', e);
-    }
-  }
-
-  close(): void {
-    this.data.clear();
-  }
-}
-
-// ============ Database Factory ============
-let dbInstance: DBInterface | null = null;
 
 export async function initDatabase(): Promise<void> {
-  if (dbInstance) return;
-
-  try {
-    dbInstance = new LocalStorageDB();
-    await dbInstance.init();
-    console.log('🎯 Using LocalStorage database');
-    
-    // Seed initial data
-    seedInitialData();
-  } catch (error) {
-    console.error('❌ Database initialization failed');
-    throw error;
-  }
+  if (db) return;
+  db = await getSqlite();
+  runMigrations(db);
+  seedDemoData(db);
+  db.save();
+  console.log('✅ SQLite database ready');
 }
 
-// Seed initial data
-function seedInitialData(): void {
-  if (!dbInstance) return;
-  
-  try {
-    // Create users table
-    dbInstance.run(`CREATE TABLE IF NOT EXISTS users (
-      id INTEGER, username TEXT, password_hash TEXT, 
-      full_name TEXT, email TEXT, role TEXT, is_active INTEGER
-    )`);
-    
-    // Check if admin exists
-    const users = dbInstance.exec('SELECT * FROM users');
-    
-    if (!users || users.length === 0) {
-      console.log('📝 Seeding initial data...');
-      
-      // Insert admin user
-      dbInstance.run(`
-        INSERT INTO users (username, password_hash, full_name, email, role, is_active)
-        VALUES ('admin', 'admin123', 'مدیر سیستم', 'admin@sarmad.ir', 'admin', 1)
-      `);
-      
-      console.log('✅ Admin user created: admin / admin123');
-      dbInstance.save();
-    } else {
-      console.log('✅ Database already has data');
-    }
-  } catch (error) {
-    console.error('❌ Error seeding data:', error);
-  }
+export function getDbInstance(): SqliteDatabase {
+  if (!db) throw new Error('پایگاه داده آماده نیست');
+  return db;
 }
 
-export function getDatabaseType(): string {
-  return 'localStorage';
+function detectTable(sql: string): string {
+  const m = sql.match(/FROM\s+([a-zA-Z_]+)/i) || sql.match(/INTO\s+([a-zA-Z_]+)/i) || sql.match(/UPDATE\s+([a-zA-Z_]+)/i);
+  return m ? m[1] : '';
 }
 
 export function execQuery(sql: string, params: any[] = []): any[] {
-  if (!dbInstance) throw new Error('Database not initialized');
-  return dbInstance.exec(sql, params);
+  if (!db) return [];
+  try {
+    const rows = db.all(sql, params);
+    const t = detectTable(sql);
+    return decorate(t, rows);
+  } catch (e) {
+    console.error('SQL error:', e, sql);
+    return [];
+  }
 }
 
 export function runQuery(sql: string, params: any[] = []): void {
-  if (!dbInstance) throw new Error('Database not initialized');
-  dbInstance.run(sql, params);
-  dbInstance.save();
+  if (!db) return;
+  try {
+    db.run(sql, params);
+    db.save();
+  } catch (e) {
+    console.error('SQL run error:', e, sql);
+    throw e;
+  }
 }
 
 export function saveDatabase(): void {
-  if (!dbInstance) return;
-  dbInstance.save();
+  db?.save();
 }
 
 export function closeDatabase(): void {
-  if (!dbInstance) return;
-  dbInstance.close();
-  dbInstance = null;
+  db?.save();
 }
+
+class LegacyDb {
+  /** sql.js-style exec returning [{columns, values}] */
+  exec(sql: string, params: any[] = []): { columns: string[]; values: any[][] }[] {
+    if (!db) return [];
+    const res = db.rawExec(sql, params);
+    return res.map((r: any) => ({ columns: r.columns, values: r.values }));
+  }
+  run(sql: string, params: any[] = []) {
+    runQuery(sql, params);
+  }
+  all<T = any>(sql: string, params: any[] = []) {
+    return execQuery(sql, params) as T[];
+  }
+}
+const legacyDb = new LegacyDb();
 
 export function getDatabase(): any {
-  return dbInstance;
+  return legacyDb;
 }
 
-// Helper functions
+export function getDatabaseType(): string {
+  return 'sqlite';
+}
+
 export function getNextNumber(sequenceName: string): string {
-  const sequences: Record<string, number> = {
-    'sales': 2006,
-    'purchase': 1006,
-    'accounting': 1007
-  };
-  const current = sequences[sequenceName] || 1;
-  sequences[sequenceName] = current + 1;
-  const prefixes: Record<string, string> = {
-    'sales': 'فروش',
-    'purchase': 'خرید',
-    'accounting': 'سند'
-  };
-  return `${prefixes[sequenceName]}-${String(current).padStart(4, '0')}`;
+  if (!db) return `${sequenceName}-${Date.now()}`;
+  const map: Record<string, string> = { sales: 'invoice_sale', purchase: 'invoice_purchase', accounting: 'accounting', receipt: 'receipt', payment: 'payment', check: 'check', inv_in: 'inv_in', inv_out: 'inv_out' };
+  const key = map[sequenceName] || sequenceName;
+  const seq = db.get<any>(`SELECT * FROM number_sequences WHERE doc_type=?`, [key]);
+  if (!seq) {
+    db.insert('number_sequences', { doc_type: key, prefix: sequenceName.toUpperCase().slice(0, 3), current_no: 1001 });
+    return `${sequenceName.toUpperCase().slice(0, 3)}-1001`;
+  }
+  const next = seq.current_no + 1;
+  db.update('number_sequences', seq.id, { current_no: next });
+  db.save();
+  return `${seq.prefix}-${String(next).padStart(seq.padding || 4, '0')}`;
 }
 
 export function backupDatabase(): string {
-  return localStorage.getItem('sarmad_db') || '';
+  return db ? db.backupBase64() : '';
 }
 
 export function restoreDatabase(base64Data: string): boolean {
-  try {
-    localStorage.setItem('sarmad_db', base64Data);
-    return true;
-  } catch (e) {
-    console.error('Restore failed:', e);
-    return false;
-  }
+  if (!db) return false;
+  const ok = db.restoreBase64(base64Data);
+  if (ok) db.save();
+  return ok;
 }
+
+export function integrityCheck(): boolean {
+  return db ? db.integrityCheck() : false;
+}
+
+export { hashPassword };

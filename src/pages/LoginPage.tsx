@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BookOpen, Eye, EyeOff, Lock, User, AlertCircle, Shield, Wifi, Zap } from 'lucide-react';
-import { initDatabase, execQuery, runQuery } from '../database/db';
+import { initDatabase, execQuery, runQuery, hashPassword } from '../database/db';
 
 interface LoginPageProps {
   onLogin: (user: { id: number; username: string; fullName: string; role: string }) => void;
@@ -30,7 +30,13 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       setDbReady(true);
 
       // Check credentials - using parameterized query
-      const users = execQuery(`SELECT * FROM users WHERE username = ? AND is_active = 1`, [username]);
+      const users = execQuery(`SELECT * FROM users WHERE username = ?`, [username]);
+      if (users && users.length > 0 && Number(users[0].is_active) !== 1) {
+        setError('این کاربر غیرفعال است. با مدیر سیستم تماس بگیرید.');
+        setAttempts(prev => prev + 1);
+        setLoading(false);
+        return;
+      }
       
       if (!users || users.length === 0) {
         console.warn('User not found or inactive:', username);
@@ -43,7 +49,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       const user = users[0];
       console.log('User found:', user);
       
-      if (user.password_hash !== password) {
+      if (user.password_hash !== hashPassword(password)) {
         console.warn('Password mismatch for user:', username);
         setError('نام کاربری یا رمز عبور اشتباه است');
         setAttempts(prev => prev + 1);
@@ -51,7 +57,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         return;
       }
 
-      if (attempts >= 5) {
+      if (attempts >= 4) {
         setError('تعداد تلاش‌های ناموفق بیش از حد مجاز است. لطفاً بعداً تلاش کنید.');
         setLoading(false);
         return;
