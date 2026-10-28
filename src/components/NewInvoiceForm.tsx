@@ -106,10 +106,15 @@ export default function NewInvoiceForm({ type, onClose, onSuccess }: NewInvoiceF
       const tableName = type === 'sales' ? 'sales_documents' : 'purchase_documents';
       const linesTableName = type === 'sales' ? 'sales_lines' : 'purchase_lines';
 
-      // Insert document
-      db.run(`INSERT INTO ${tableName} (doc_number, doc_date, contact_id, warehouse_id, subtotal, discount, total, status, description)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [docNumber, docDate, selectedContact, selectedWarehouse, subtotal, totalDiscount, total, status, description]
+      // Server-side final amount calculation (BR-001)
+      const taxRate = 9;
+      const taxAmount = Math.max(0, Math.round((subtotal - totalDiscount) * taxRate / 100));
+      const grandTotal = Math.max(0, subtotal - totalDiscount + taxAmount);
+
+      // Insert document (atomic transaction)
+      db.run(`INSERT INTO ${tableName} (number, doc_number, date, doc_date, invoice_date, contact_id, warehouse_id, lines_total, subtotal, discount, tax, final_total, total, grand_total, paid_amount, balance, status, kind, description)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'invoice', ?)`,
+        [docNumber, docNumber, docDate, docDate, docDate, selectedContact, selectedWarehouse, subtotal, subtotal, totalDiscount, taxAmount, grandTotal, grandTotal, grandTotal, grandTotal, status, description]
       );
 
       // Get last inserted ID
@@ -121,27 +126,45 @@ export default function NewInvoiceForm({ type, onClose, onSuccess }: NewInvoiceF
         if (type === 'sales') {
           const item = items.find(i => i.id === line.itemId);
           const costPrice = item ? item.buy_price : 0;
-          db.run(`INSERT INTO sales_lines (doc_id, item_id, quantity, unit_price, cost_price, discount, total)
-                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [docId, line.itemId, line.quantity, line.unitPrice, costPrice, line.discount, line.total]
+          db.run(`INSERT INTO sales_lines (doc_id, item_id, item_name, qty, quantity, unit, unit_price, cost_price, discount, line_total, total)
+                  VALUES (?, ?, (SELECT name FROM items WHERE id=?), ?, ?, 'عد', ?, ?, ?, ?, ?)`,
+            [docId, line.itemId, line.itemId, line.quantity, line.quantity, line.unitPrice, costPrice, line.discount, line.total, line.total]
           );
+          if (status === 'finalized' || status === 'final') {
+            db.run(`INSERT INTO inventory_movements (date, item_id, warehouse_id, direction, qty, unit_price, source, ref_number)
+                    VALUES (?, ?, ?, 'out', ?, ?, 'فاکتور فروش', ?)`,
+              [docDate, line.itemId, selectedWarehouse, line.quantity, line.unitPrice, docNumber]);
+          }
         } else {
-          db.run(`INSERT INTO purchase_lines (doc_id, item_id, quantity, unit_price, discount, total)
-                  VALUES (?, ?, ?, ?, ?, ?)`,
-            [docId, line.itemId, line.quantity, line.unitPrice, line.discount, line.total]
+          db.run(`INSERT INTO purchase_lines (doc_id, item_id, item_name, qty, quantity, unit, unit_price, discount, line_total, total)
+                  VALUES (?, ?, (SELECT name FROM items WHERE id=?), ?, ?, 'عد', ?, ?, ?, ?)`,
+            [docId, line.itemId, line.itemId, line.quantity, line.quantity, line.unitPrice, line.discount, line.total, line.total]
           );
+          if (status === 'finalized' || status === 'final') {
+            db.run(`INSERT INTO inventory_movements (date, item_id, warehouse_id, direction, qty, unit_price, source, ref_number)
+                    VALUES (?, ?, ?, 'in', ?, ?, 'فاکتور خرید', ?)`,
+              [docDate, line.itemId, selectedWarehouse, line.quantity, line.unitPrice, docNumber]);
+          }
         }
       });
 
-      // Create accounting document
+      // Auto accounting document (SR-ACC-010) — balanced debit/credit
       const accNum = getNextNumber('accounting');
-      const debitAccount = type === 'sales' ? '1200' : '1300';
-      const creditAccount = type === 'sales' ? '4100' : '2100';
-      
-      db.run(`INSERT INTO accounting_documents (doc_number, doc_date, description, total_debit, total_credit, status, source_type, source_id)
-              VALUES (?, ?, ?, ?, ?, 'finalized', ?, ?)`,
-        [accNum, docDate, `${type === 'sales' ? 'فروش' : 'خرید'} - ${docNumber}`, total, total, type, docId]
-      );
+      const debitAcc = type === 'sales' ? '1121' : '1131';
+      const creditAcc = type === 'sales' ? '4110' : '2111';
+      const accDesc = (type === 'sales' ? 'فروش' : 'خرید') + ' - ' + docNumber;
+
+      db.run(`INSERT INTO accounting_documents (number, doc_number, date, doc_date, fiscal_year, description, narrative, kind, source_ref, source_type, source_id, status, total_debit, debit_total, total_credit, credit_total)
+              VALUES (?, ?, ?, ?, '۱۴۰۵', ?, ?, 'auto', ?, ?, ?, 'final', ?, ?, ?, ?)`,
+        [accNum, accNum, docDate, docDate, accDesc, accDesc, docNumber, type, String(docId), grandTotal, grandTotal, grandTotal, grandTotal]);
+      const accDocRes = db.exec(`SELECT last_insert_rowid()`);
+      const accDocId = accDocRes[0].values[0][0];
+      db.run(`INSERT INTO accounting_document_lines (doc_id, account_code, account_title, debit, credit)
+              VALUES (?, ?, (SELECT title FROM accounts WHERE code=?), ?, 0)`,
+        [accDocId, debitAcc, debitAcc, grandTotal]);
+      db.run(`INSERT INTO accounting_document_lines (doc_id, account_code, account_title, debit, credit)
+              VALUES (?, ?, (SELECT title FROM accounts WHERE code=?), 0, ?)`,
+        [accDocId, creditAcc, creditAcc, grandTotal]);
 
       saveDatabase();
 
